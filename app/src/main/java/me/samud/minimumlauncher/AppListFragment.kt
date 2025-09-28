@@ -1,8 +1,5 @@
 package me.samud.minimumlauncher
 
-import android.content.Intent
-import android.content.pm.PackageManager
-import android.content.pm.ResolveInfo
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -15,6 +12,7 @@ class AppListFragment : Fragment() {
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var appListAdapter: AppListAdapter
+    private lateinit var appLoader: AppLoader
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -24,29 +22,18 @@ class AppListFragment : Fragment() {
         recyclerView = view.findViewById(R.id.app_list_recycler_view)
         recyclerView.layoutManager = LinearLayoutManager(context)
 
+        // Create AppSource implementation
+        val appSource: AppSource = PackageManagerAppSource(requireActivity().packageManager)
+        // Initialize AppLoader with the AppSource
+        appLoader = AppLoader(appSource)
+
         loadApps()
 
         return view
     }
 
     private fun loadApps() {
-        val packageManager: PackageManager = requireActivity().packageManager
-        val apps = mutableListOf<AppInfo>()
-
-        val intent = Intent(Intent.ACTION_MAIN, null)
-        intent.addCategory(Intent.CATEGORY_LAUNCHER)
-
-        val allApps: List<ResolveInfo> = packageManager.queryIntentActivities(intent, 0)
-        for (resolveInfo in allApps) {
-            val appName = resolveInfo.loadLabel(packageManager).toString()
-            val packageName = resolveInfo.activityInfo.packageName
-            // val appIcon = resolveInfo.loadIcon(packageManager) // If you want to load icons
-            apps.add(AppInfo(appName, packageName /*, appIcon */))
-        }
-
-        // Sort apps alphabetically
-        apps.sortBy { it.name.lowercase() }
-
+        val apps = appLoader.loadAndSortApps()
         appListAdapter = AppListAdapter(apps)
         recyclerView.adapter = appListAdapter
     }
