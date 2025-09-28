@@ -6,7 +6,15 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
-class AppListAdapter(private val apps: List<AppInfo>) : RecyclerView.Adapter<AppListAdapter.ViewHolder>() {
+class AppListAdapter(
+    private val apps: List<AppInfo>,
+    private val listener: OnAppClickListener // Added listener
+) : RecyclerView.Adapter<AppListAdapter.ViewHolder>() {
+
+    // Interface for click events
+    interface OnAppClickListener {
+        fun onAppClick(packageName: String)
+    }
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val appName: TextView = itemView.findViewById(R.id.app_name)
@@ -21,7 +29,10 @@ class AppListAdapter(private val apps: List<AppInfo>) : RecyclerView.Adapter<App
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val app = apps[position]
         holder.appName.text = app.name
-        // TODO: Add click listener to launch the app
+        // Set click listener to launch the app
+        holder.itemView.setOnClickListener {
+            listener.onAppClick(app.packageName)
+        }
     }
 
     override fun getItemCount(): Int {
