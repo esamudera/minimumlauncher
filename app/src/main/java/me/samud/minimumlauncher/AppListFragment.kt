@@ -2,7 +2,7 @@ package me.samud.minimumlauncher
 
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.content.pm.ResolveInfo // Added this import
+import android.content.pm.ResolveInfo
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -30,21 +30,18 @@ class AppListFragment : Fragment() {
     }
 
     private fun loadApps() {
-        val packageManager = requireActivity().packageManager
+        val packageManager: PackageManager = requireActivity().packageManager
         val apps = mutableListOf<AppInfo>()
 
-        val mainIntent = Intent(Intent.ACTION_MAIN, null)
-        mainIntent.addCategory(Intent.CATEGORY_LAUNCHER)
-        val pkgAppsList: List<ResolveInfo> = packageManager.queryIntentActivities(mainIntent, 0)
+        val intent = Intent(Intent.ACTION_MAIN, null)
+        intent.addCategory(Intent.CATEGORY_LAUNCHER)
 
-        for (resolveInfo in pkgAppsList) {
-            val activityInfo = resolveInfo.activityInfo
-            // Ensure activityInfo and packageName are not null before using them
-            if (activityInfo != null && activityInfo.packageName != null) {
-                val appName = resolveInfo.loadLabel(packageManager).toString()
-                val packageName = activityInfo.packageName
-                apps.add(AppInfo(appName, packageName))
-            }
+        val allApps: List<ResolveInfo> = packageManager.queryIntentActivities(intent, 0)
+        for (resolveInfo in allApps) {
+            val appName = resolveInfo.loadLabel(packageManager).toString()
+            val packageName = resolveInfo.activityInfo.packageName
+            // val appIcon = resolveInfo.loadIcon(packageManager) // If you want to load icons
+            apps.add(AppInfo(appName, packageName /*, appIcon */))
         }
 
         // Sort apps alphabetically
