@@ -7,40 +7,80 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
 class AppListAdapter(
-    private var apps: List<AppInfo>,
+    private var items: List<ListItem>,
     private val listener: OnAppClickListener
-) : RecyclerView.Adapter<AppListAdapter.ViewHolder>() {
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     // Interface for click events
     interface OnAppClickListener {
         fun onAppClick(packageName: String)
     }
 
-    class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    // View holder for app items
+    class AppViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val appName: TextView = itemView.findViewById(R.id.app_name)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.app_list_item, parent, false)
-        return ViewHolder(view)
+    // View holder for header items
+    class HeaderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val headerTitle: TextView = itemView.findViewById(R.id.header_title)
     }
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val app = apps[position]
-        holder.appName.text = app.name
-        // Set click listener to launch the app
-        holder.itemView.setOnClickListener {
-            listener.onAppClick(app.packageName)
+    override fun getItemViewType(position: Int): Int {
+        return when (items[position]) {
+            is ListItem.AppItem -> VIEW_TYPE_APP
+            is ListItem.HeaderItem -> VIEW_TYPE_HEADER
+        }
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        return when (viewType) {
+            VIEW_TYPE_APP -> {
+                val view = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.app_list_item, parent, false)
+                AppViewHolder(view)
+            }
+            VIEW_TYPE_HEADER -> {
+                val view = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.list_header, parent, false)
+                HeaderViewHolder(view)
+            }
+            else -> throw IllegalArgumentException("Invalid view type")
+        }
+    }
+
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        when (val item = items[position]) {
+            is ListItem.AppItem -> {
+                val appHolder = holder as AppViewHolder
+                appHolder.appName.text = item.appInfo.name
+                appHolder.itemView.setOnClickListener {
+                    listener.onAppClick(item.appInfo.packageName)
+                }
+            }
+            is ListItem.HeaderItem -> {
+                val headerHolder = holder as HeaderViewHolder
+                headerHolder.headerTitle.text = item.title
+            }
         }
     }
 
     override fun getItemCount(): Int {
-        return apps.size
+        return items.size
+    }
+
+    fun updateItems(newItems: List<ListItem>) {
+        items = newItems
+        notifyDataSetChanged()
     }
 
     fun updateApps(newApps: List<AppInfo>) {
-        apps = newApps
+        items = newApps.map { ListItem.AppItem(it) }
         notifyDataSetChanged()
+    }
+
+    companion object {
+        private const val VIEW_TYPE_APP = 0
+        private const val VIEW_TYPE_HEADER = 1
     }
 }

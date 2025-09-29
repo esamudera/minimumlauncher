@@ -4,11 +4,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.activity.OnBackPressedCallback
-import com.google.android.material.search.SearchBar
+import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.search.SearchView
 import java.util.Locale
 
@@ -19,7 +20,7 @@ class AppListFragment : Fragment(), AppListAdapter.OnAppClickListener {
     private lateinit var searchResultsRecyclerView: RecyclerView
     private lateinit var searchResultsAdapter: AppListAdapter
     private lateinit var appLoader: AppLoader
-    private lateinit var searchBar: SearchBar
+    private lateinit var toolbar: Toolbar
     private lateinit var searchView: SearchView
     private lateinit var allApps: List<AppInfo>
 
@@ -29,12 +30,18 @@ class AppListFragment : Fragment(), AppListAdapter.OnAppClickListener {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_app_list, container, false)
 
+        // Set AppBarLayout height to ~40% of screen height
+        val appBarLayout = view.findViewById<AppBarLayout>(R.id.app_bar)
+        val displayMetrics = requireContext().resources.displayMetrics
+        val screenHeight = displayMetrics.heightPixels
+        appBarLayout.layoutParams.height = (screenHeight * 0.40).toInt()
+
         // Main RecyclerView
         recyclerView = view.findViewById(R.id.app_list_recycler_view)
         recyclerView.layoutManager = LinearLayoutManager(context)
 
         // Search UI
-        searchBar = view.findViewById(R.id.search_bar)
+        toolbar = view.findViewById(R.id.toolbar)
         searchView = view.findViewById(R.id.search_view)
 
         // Search Results RecyclerView
@@ -64,8 +71,30 @@ class AppListFragment : Fragment(), AppListAdapter.OnAppClickListener {
     }
 
     private fun loadApps() {
+        // Load all apps for search functionality
         allApps = appLoader.loadAndSortApps()
-        appListAdapter = AppListAdapter(allApps, this)
+
+        // Create the structured list for display
+        val displayList = mutableListOf<ListItem>()
+
+        // User's Favorites section
+        displayList.add(ListItem.HeaderItem("User's Favorites"))
+        // Favorites list is empty for now
+
+        // Installed Apps section
+        displayList.add(ListItem.HeaderItem("Installed Apps"))
+        displayList.addAll(allApps.map { ListItem.AppItem(it) })
+
+        // MinimalLauncher Apps section
+        val settingsApp = AppInfo(
+            name = "Minimal Launcher Settings",
+            packageName = "me.samud.minimumlauncher.SETTINGS"
+        )
+        displayList.add(ListItem.HeaderItem("MinimalLauncher Apps"))
+        displayList.add(ListItem.AppItem(settingsApp))
+
+        // Initialize the adapter with the structured list
+        appListAdapter = AppListAdapter(displayList, this)
         recyclerView.adapter = appListAdapter
     }
 
@@ -73,7 +102,6 @@ class AppListFragment : Fragment(), AppListAdapter.OnAppClickListener {
         searchView
             .editText
             .setOnEditorActionListener { v, actionId, event ->
-                searchBar.setText(searchView.text)
                 searchView.hide()
                 false
             }
@@ -84,6 +112,7 @@ class AppListFragment : Fragment(), AppListAdapter.OnAppClickListener {
                 val filteredApps = if (query.isEmpty()) {
                     emptyList()
                 } else {
+                    // The search filter remains the same, using the flat allApps list
                     allApps.filter {
                         it.name.lowercase(Locale.getDefault()).contains(query)
                     }
@@ -93,12 +122,10 @@ class AppListFragment : Fragment(), AppListAdapter.OnAppClickListener {
             override fun afterTextChanged(s: android.text.Editable?) {}
         })
 
-        searchBar.setOnMenuItemClickListener { menuItem ->
-            if (menuItem.itemId == R.id.action_settings) {
-                activity?.supportFragmentManager?.beginTransaction()
-                    ?.replace(R.id.fragment_container, SettingsFragment())
-                    ?.addToBackStack(null)
-                    ?.commit()
+        toolbar.inflateMenu(R.menu.main_toolbar_menu)
+        toolbar.setOnMenuItemClickListener { menuItem ->
+            if (menuItem.itemId == R.id.action_search) {
+                searchView.show()
                 true
             } else {
                 false
@@ -107,9 +134,16 @@ class AppListFragment : Fragment(), AppListAdapter.OnAppClickListener {
     }
 
     override fun onAppClick(packageName: String) {
-        val launchIntent = requireActivity().packageManager.getLaunchIntentForPackage(packageName)
-        launchIntent?.let {
-            startActivity(it)
+        if (packageName == "me.samud.minimumlauncher.SETTINGS") {
+            activity?.supportFragmentManager?.beginTransaction()
+                ?.replace(R.id.fragment_container, SettingsFragment())
+                ?.addToBackStack(null)
+                ?.commit()
+        } else {
+            val launchIntent = requireActivity().packageManager.getLaunchIntentForPackage(packageName)
+            launchIntent?.let {
+                startActivity(it)
+            }
         }
         // Hide search view after launching an app from search results
         if (searchView.isShowing) {
