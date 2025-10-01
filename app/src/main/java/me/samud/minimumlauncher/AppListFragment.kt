@@ -13,7 +13,7 @@ import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.search.SearchView
 import java.util.Locale
 
-class AppListFragment : Fragment(), AppListAdapter.OnAppClickListener {
+class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener {
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var appListAdapter: AppListAdapter
@@ -83,15 +83,16 @@ class AppListFragment : Fragment(), AppListAdapter.OnAppClickListener {
 
         // Installed Apps section
         displayList.add(ListItem.HeaderItem("Installed Apps"))
-        displayList.addAll(allApps.map { ListItem.AppItem(it) })
+        displayList.addAll(allApps.map { ListItem.UserAppItem(it) })
 
         // MinimalLauncher Apps section
-        val settingsApp = AppInfo(
-            name = "Minimal Launcher Settings",
-            packageName = "me.samud.minimumlauncher.SETTINGS"
-        )
         displayList.add(ListItem.HeaderItem("MinimalLauncher Apps"))
-        displayList.add(ListItem.AppItem(settingsApp))
+        displayList.add(
+            ListItem.InternalFragmentItem(
+                title = "Minimal Launcher Settings",
+                destination = SettingsFragment::class
+            )
+        )
 
         // Initialize the adapter with the structured list
         appListAdapter = AppListAdapter(displayList, this)
@@ -133,18 +134,8 @@ class AppListFragment : Fragment(), AppListAdapter.OnAppClickListener {
         }
     }
 
-    override fun onAppClick(packageName: String) {
-        if (packageName == "me.samud.minimumlauncher.SETTINGS") {
-            activity?.supportFragmentManager?.beginTransaction()
-                ?.replace(R.id.fragment_container, SettingsFragment())
-                ?.addToBackStack(null)
-                ?.commit()
-        } else {
-            val launchIntent = requireActivity().packageManager.getLaunchIntentForPackage(packageName)
-            launchIntent?.let {
-                startActivity(it)
-            }
-        }
+    override fun onItemClick(item: ListItem.Launchable) {
+        item.onLaunch(requireContext(), activity?.supportFragmentManager)
         // Hide search view after launching an app from search results
         if (searchView.isShowing) {
             searchView.hide()

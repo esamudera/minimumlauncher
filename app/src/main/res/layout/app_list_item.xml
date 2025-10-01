@@ -3,5 +3,9 @@
     android:id="@+id/app_name"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="16dp"
-    android:textSize="16sp" />
+    android:minHeight="48dp"
+    android:gravity="center_vertical"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
+    android:textSize="24sp"
+    android:textColor="?attr/colorOnSurface" />

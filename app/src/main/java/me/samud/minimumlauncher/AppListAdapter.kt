@@ -8,16 +8,16 @@ import androidx.recyclerview.widget.RecyclerView
 
 class AppListAdapter(
     private var items: List<ListItem>,
-    private val listener: OnAppClickListener
+    private val listener: OnItemClickListener
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     // Interface for click events
-    interface OnAppClickListener {
-        fun onAppClick(packageName: String)
+    interface OnItemClickListener {
+        fun onItemClick(item: ListItem.Launchable)
     }
 
     // View holder for app items
-    class AppViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    class LaunchableViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val appName: TextView = itemView.findViewById(R.id.app_name)
     }
 
@@ -28,17 +28,19 @@ class AppListAdapter(
 
     override fun getItemViewType(position: Int): Int {
         return when (items[position]) {
-            is ListItem.AppItem -> VIEW_TYPE_APP
+            is ListItem.UserAppItem -> VIEW_TYPE_LAUNCHABLE
+            is ListItem.InternalFragmentItem -> VIEW_TYPE_LAUNCHABLE
+            is ListItem.WebShortcutItem -> VIEW_TYPE_LAUNCHABLE
             is ListItem.HeaderItem -> VIEW_TYPE_HEADER
         }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return when (viewType) {
-            VIEW_TYPE_APP -> {
+            VIEW_TYPE_LAUNCHABLE -> {
                 val view = LayoutInflater.from(parent.context)
                     .inflate(R.layout.app_list_item, parent, false)
-                AppViewHolder(view)
+                LaunchableViewHolder(view)
             }
             VIEW_TYPE_HEADER -> {
                 val view = LayoutInflater.from(parent.context)
@@ -51,11 +53,25 @@ class AppListAdapter(
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (val item = items[position]) {
-            is ListItem.AppItem -> {
-                val appHolder = holder as AppViewHolder
+            is ListItem.UserAppItem -> {
+                val appHolder = holder as LaunchableViewHolder
                 appHolder.appName.text = item.appInfo.name
                 appHolder.itemView.setOnClickListener {
-                    listener.onAppClick(item.appInfo.packageName)
+                    listener.onItemClick(item)
+                }
+            }
+            is ListItem.InternalFragmentItem -> {
+                val appHolder = holder as LaunchableViewHolder
+                appHolder.appName.text = item.title
+                appHolder.itemView.setOnClickListener {
+                    listener.onItemClick(item)
+                }
+            }
+            is ListItem.WebShortcutItem -> {
+                val appHolder = holder as LaunchableViewHolder
+                appHolder.appName.text = item.title
+                appHolder.itemView.setOnClickListener {
+                    listener.onItemClick(item)
                 }
             }
             is ListItem.HeaderItem -> {
@@ -75,12 +91,12 @@ class AppListAdapter(
     }
 
     fun updateApps(newApps: List<AppInfo>) {
-        items = newApps.map { ListItem.AppItem(it) }
+        items = newApps.map { ListItem.UserAppItem(it) }
         notifyDataSetChanged()
     }
 
     companion object {
-        private const val VIEW_TYPE_APP = 0
+        private const val VIEW_TYPE_LAUNCHABLE = 0
         private const val VIEW_TYPE_HEADER = 1
     }
 }
