@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
 import android.view.LayoutInflater
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.fragment.app.Fragment
@@ -36,8 +37,15 @@ sealed class ListItem {
             val menuLayout = view.findViewById<LinearLayout>(R.id.menu_layout)
 
             // "App info" item
-            val appInfoItem = LayoutInflater.from(context).inflate(R.layout.bottom_sheet_menu_item, menuLayout, false) as TextView
-            appInfoItem.text = "App info"
+            val appInfoItem = LayoutInflater.from(context).inflate(R.layout.bottom_sheet_menu_item, menuLayout, false) as LinearLayout
+            val iconView = appInfoItem.findViewById<ImageView>(R.id.icon)
+            val textView = appInfoItem.findViewById<TextView>(R.id.text)
+            
+            textView.text = "App info"
+            // Use Material Design icon for app info (ic_info_outline)
+            // Note: You might need to add this icon to your resources or use Android system icon
+            iconView.setImageResource(android.R.drawable.ic_dialog_info)
+            
             appInfoItem.setOnClickListener {
                 val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
                 intent.data = Uri.fromParts("package", appInfo.packageName, null)
