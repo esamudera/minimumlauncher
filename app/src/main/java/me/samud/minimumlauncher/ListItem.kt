@@ -14,6 +14,66 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlin.reflect.KClass
 
 
+class UserAppBottomSheetDialog(private val context: Context, private val appInfo: AppInfo) {
+    fun show() {
+        val bottomSheetDialog = BottomSheetDialog(context)
+        val view = LayoutInflater.from(context).inflate(R.layout.bottom_sheet_menu, null)
+        val menuLayout = view.findViewById<LinearLayout>(R.id.menu_layout)
+
+        // Create a list of menu items to add
+        val menuItems = listOf(
+            Triple("Add to favorite", android.R.drawable.2ic_menu_add) {
+                // TODO: Implement add to favorite functionality
+                bottomSheetDialog.dismiss()
+            },
+            Triple("Uninstall", android.R.drawable.ic_menu_delete) {
+                val intent = Intent(Intent.ACTION_DELETE)
+                intent.data = Uri.fromParts("package", appInfo.packageName, null)
+                context.startActivity(intent)
+                bottomSheetDialog.dismiss()
+            },
+            Triple("Hide", android.R.drawable.ic_menu_close_clear_cancel) {
+                // TODO: Implement hide functionality
+                bottomSheetDialog.dismiss()
+            },
+            Triple("App info", android.R.drawable.ic_dialog_info) {
+                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                intent.data = Uri.fromParts("package", appInfo.packageName, null)
+                context.startActivity(intent)
+                bottomSheetDialog.dismiss()
+            }
+        )
+
+        // Add each menu item
+        menuItems.forEach { (text, iconResId, onClick) ->
+            val menuItem = createMenuItem(text, iconResId, onClick, menuLayout)
+            menuLayout.addView(menuItem)
+        }
+
+        bottomSheetDialog.setContentView(view)
+        bottomSheetDialog.show()
+    }
+
+    private fun createMenuItem(
+        text: String, 
+        iconResId: Int, 
+        onClick: () -> Unit,
+        menuLayout: LinearLayout
+    ): LinearLayout {
+        val menuItem = LayoutInflater.from(context).inflate(R.layout.bottom_sheet_menu_item, null, false) as LinearLayout
+        val iconView = menuItem.findViewById<ImageView>(R.id.icon)
+        val textView = menuItem.findViewById<TextView>(R.id.text)
+        
+        textView.text = text
+        iconView.setImageResource(iconResId)
+        
+        menuItem.setOnClickListener { 
+            onClick()
+        }
+        return menuItem
+    }
+}
+
 sealed class ListItem {
     interface Launchable {
         fun onLaunch(context: Context, fragmentManager: FragmentManager?)
@@ -32,30 +92,7 @@ sealed class ListItem {
         }
 
         override fun onLongClick(context: Context, fragmentManager: FragmentManager?): Boolean {
-            val bottomSheetDialog = BottomSheetDialog(context)
-            val view = LayoutInflater.from(context).inflate(R.layout.bottom_sheet_menu, null)
-            val menuLayout = view.findViewById<LinearLayout>(R.id.menu_layout)
-
-            // "App info" item
-            val appInfoItem = LayoutInflater.from(context).inflate(R.layout.bottom_sheet_menu_item, menuLayout, false) as LinearLayout
-            val iconView = appInfoItem.findViewById<ImageView>(R.id.icon)
-            val textView = appInfoItem.findViewById<TextView>(R.id.text)
-            
-            textView.text = "App info"
-            // Use Material Design icon for app info (ic_info_outline)
-            // Note: You might need to add this icon to your resources or use Android system icon
-            iconView.setImageResource(android.R.drawable.ic_dialog_info)
-            
-            appInfoItem.setOnClickListener {
-                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                intent.data = Uri.fromParts("package", appInfo.packageName, null)
-                context.startActivity(intent)
-                bottomSheetDialog.dismiss()
-            }
-            menuLayout.addView(appInfoItem)
-
-            bottomSheetDialog.setContentView(view)
-            bottomSheetDialog.show()
+            UserAppBottomSheetDialog(context, appInfo).show()
             return true
         }
     }

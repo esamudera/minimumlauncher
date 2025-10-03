@@ -3,5 +3,9 @@
     android:id="@+id/menu_layout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android.orientation="vertical"
-    android:padding="16dp" />
+    android:orientation="vertical"
+    android:padding="16dp">
+    
+    <!-- Items will be added here programmatically -->
+    
+</LinearLayout>
