@@ -6,17 +6,29 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.Fragment
 import kotlin.reflect.KClass
 
+import android.widget.Toast
+
+
 sealed class ListItem {
     interface Launchable {
         fun onLaunch(context: Context, fragmentManager: FragmentManager?)
     }
 
-    data class UserAppItem(val appInfo: AppInfo) : ListItem(), Launchable {
+    interface LongClickable {
+        fun onLongClick(context: Context): Boolean
+    }
+
+    data class UserAppItem(val appInfo: AppInfo) : ListItem(), Launchable, LongClickable {
         override fun onLaunch(context: Context, fragmentManager: FragmentManager?) {
             val launchIntent = context.packageManager.getLaunchIntentForPackage(appInfo.packageName)
             launchIntent?.let {
                 context.startActivity(it)
             }
+        }
+
+        override fun onLongClick(context: Context): Boolean {
+            Toast.makeText(context, "Long clicked: ${appInfo.name}", Toast.LENGTH_SHORT).show()
+            return true
         }
     }
 
@@ -30,9 +42,14 @@ sealed class ListItem {
         }
     }
 
-    data class WebShortcutItem(val title: String, val url: String) : ListItem(), Launchable {
+    data class WebShortcutItem(val title: String, val url: String) : ListItem(), Launchable, LongClickable {
         override fun onLaunch(context: Context, fragmentManager: FragmentManager?) {
             // TODO: Not yet implemented
+        }
+
+        override fun onLongClick(context: Context): Boolean {
+            Toast.makeText(context, "Long clicked: $title", Toast.LENGTH_SHORT).show()
+            return true
         }
     }
 

@@ -15,7 +15,7 @@ import com.google.android.material.search.SearchView
 import androidx.lifecycle.ViewModelProvider
 import java.util.Locale
 
-class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener {
+class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListAdapter.OnItemLongClickListener {
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var appListAdapter: AppListAdapter
@@ -112,7 +112,7 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener {
         )
 
         // Initialize the adapter with the structured list
-        appListAdapter = AppListAdapter(displayList, this)
+        appListAdapter = AppListAdapter(displayList, this, this)
         recyclerView.adapter = appListAdapter
     }
 
@@ -156,6 +156,12 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener {
         // Hide search view after launching an app from search results
         if (searchView.isShowing) {
             searchView.hide()
+        }
+    }
+
+    override fun onItemLongClick(item: ListItem) {
+        if (item is ListItem.LongClickable) {
+            item.onLongClick(requireContext())
         }
     }
 }

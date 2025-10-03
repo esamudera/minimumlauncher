@@ -8,12 +8,18 @@ import androidx.recyclerview.widget.RecyclerView
 
 class AppListAdapter(
     private var items: List<ListItem>,
-    private val listener: OnItemClickListener
+    private val listener: OnItemClickListener,
+    private val longClickListener: OnItemLongClickListener? = null
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     // Interface for click events
     interface OnItemClickListener {
         fun onItemClick(item: ListItem.Launchable)
+    }
+
+    // Interface for long click events
+    interface OnItemLongClickListener {
+        fun onItemLongClick(item: ListItem)
     }
 
     // View holder for app items
@@ -59,6 +65,10 @@ class AppListAdapter(
                 appHolder.itemView.setOnClickListener {
                     listener.onItemClick(item)
                 }
+                appHolder.itemView.setOnLongClickListener {
+                    longClickListener?.onItemLongClick(item)
+                    true
+                }
             }
             is ListItem.InternalFragmentItem -> {
                 val appHolder = holder as LaunchableViewHolder
@@ -72,6 +82,10 @@ class AppListAdapter(
                 appHolder.appName.text = item.title
                 appHolder.itemView.setOnClickListener {
                     listener.onItemClick(item)
+                }
+                appHolder.itemView.setOnLongClickListener {
+                    longClickListener?.onItemLongClick(item)
+                    true
                 }
             }
             is ListItem.HeaderItem -> {
