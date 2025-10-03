@@ -5,12 +5,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.Toolbar
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.activity.OnBackPressedCallback
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.search.SearchView
+import androidx.lifecycle.ViewModelProvider
 import java.util.Locale
 
 class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener {
@@ -23,11 +25,15 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener {
     private lateinit var toolbar: Toolbar
     private lateinit var searchView: SearchView
     private lateinit var allApps: List<AppInfo>
+    private lateinit var sharedViewModel: SharedViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        // Get the shared ViewModel, scoped to the activity
+        sharedViewModel = ViewModelProvider(requireActivity()).get(SharedViewModel::class.java)
+
         val view = inflater.inflate(R.layout.fragment_app_list, container, false)
 
         // Set AppBarLayout height to ~40% of screen height
@@ -35,6 +41,17 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener {
         val displayMetrics = requireContext().resources.displayMetrics
         val screenHeight = displayMetrics.heightPixels
         appBarLayout.layoutParams.height = (screenHeight * 0.40).toInt()
+
+        appBarLayout.addOnOffsetChangedListener { appBarLayout, verticalOffset ->
+            // Consider the AppBarLayout collapsed as soon as it starts to move up from the expanded position.
+            val isCollapsed = verticalOffset < 0
+            sharedViewModel.isAppBarCollapsed = isCollapsed
+        }
+
+        // Restore the collapsed/expanded state from the ViewModel after layout
+        // appBarLayout.post {
+            appBarLayout.setExpanded(!sharedViewModel.isAppBarCollapsed, false) // false = no animation
+        // }
 
         // Main RecyclerView
         recyclerView = view.findViewById(R.id.app_list_recycler_view)
