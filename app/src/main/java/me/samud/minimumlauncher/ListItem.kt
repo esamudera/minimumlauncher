@@ -22,7 +22,7 @@ class UserAppBottomSheetDialog(private val context: Context, private val appInfo
 
         // Create a list of menu items to add
         val menuItems = listOf(
-            Triple("Add to favorite", android.R.drawable.2ic_menu_add) {
+            Triple("Add to favorite", android.R.drawable.ic_menu_add) {
                 // TODO: Implement add to favorite functionality
                 bottomSheetDialog.dismiss()
             },
