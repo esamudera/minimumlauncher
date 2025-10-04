@@ -64,7 +64,7 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListA
         // Search Results RecyclerView
         searchResultsRecyclerView = view.findViewById(R.id.search_results_recycler_view)
         searchResultsRecyclerView.layoutManager = LinearLayoutManager(context)
-        searchResultsAdapter = AppListAdapter(emptyList(), this)
+        searchResultsAdapter = AppListAdapter(emptyList(), this, null, sharedViewModel)
         searchResultsRecyclerView.adapter = searchResultsAdapter
 
         val appSource: AppSource = PackageManagerAppSource(requireActivity().packageManager)
@@ -72,6 +72,13 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListA
 
         loadApps()
         setupSearch()
+
+        sharedViewModel.favoritesChanged.observe(viewLifecycleOwner) { changed ->
+            if (changed) {
+                loadApps()
+                sharedViewModel.onFavoritesChangedHandled()
+            }
+        }
 
         val backCallback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -88,19 +95,28 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListA
     }
 
     private fun loadApps() {
+        val favoritesManager = FavoritesManager(requireContext())
+        val favoritePackageNames = favoritesManager.getFavorites()
+
         // Load all apps for search functionality
-        allApps = appLoader.loadAndSortApps()
+        allApps = appLoader.loadAndSortApps().map { appInfo ->
+            appInfo.apply { isFavorite = favoritePackageNames.contains(appInfo.packageName) }
+        }
 
         // Create the structured list for display
         val displayList = mutableListOf<ListItem>()
 
         // User's Favorites section
-        displayList.add(ListItem.HeaderItem("User's Favorites"))
-        // Favorites list is empty for now
+        val favoritesList = allApps.filter { it.isFavorite }
+        if (favoritesList.isNotEmpty()) {
+            displayList.add(ListItem.HeaderItem("User's Favorites"))
+            displayList.addAll(favoritesList.map { ListItem.UserAppItem(it) })
+        }
 
         // Installed Apps section
+        val otherAppsList = allApps.filter { !it.isFavorite }
         displayList.add(ListItem.HeaderItem("Installed Apps"))
-        displayList.addAll(allApps.map { ListItem.UserAppItem(it) })
+        displayList.addAll(otherAppsList.map { ListItem.UserAppItem(it) })
 
         // MinimalLauncher Apps section
         displayList.add(ListItem.HeaderItem("MinimalLauncher Apps"))
@@ -112,8 +128,12 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListA
         )
 
         // Initialize the adapter with the structured list
-        appListAdapter = AppListAdapter(displayList, this, this)
-        recyclerView.adapter = appListAdapter
+        if (::appListAdapter.isInitialized) {
+            appListAdapter.updateItems(displayList)
+        } else {
+            appListAdapter = AppListAdapter(displayList, this, this, sharedViewModel)
+            recyclerView.adapter = appListAdapter
+        }
     }
 
     private fun setupSearch() {
@@ -159,9 +179,9 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListA
         }
     }
 
-    override fun onItemLongClick(item: ListItem) {
+    override fun onItemLongClick(item: ListItem, sharedViewModel: SharedViewModel) {
         if (item is ListItem.LongClickable) {
-            item.onLongClick(requireContext(), activity?.supportFragmentManager)
+            item.onLongClick(requireContext(), activity?.supportFragmentManager, sharedViewModel)
         }
     }
 }

@@ -9,7 +9,8 @@ import androidx.recyclerview.widget.RecyclerView
 class AppListAdapter(
     private var items: List<ListItem>,
     private val listener: OnItemClickListener,
-    private val longClickListener: OnItemLongClickListener? = null
+    private val longClickListener: OnItemLongClickListener? = null,
+    private val sharedViewModel: SharedViewModel
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     // Interface for click events
@@ -19,7 +20,7 @@ class AppListAdapter(
 
     // Interface for long click events
     interface OnItemLongClickListener {
-        fun onItemLongClick(item: ListItem)
+        fun onItemLongClick(item: ListItem, sharedViewModel: SharedViewModel)
     }
 
     // View holder for app items
@@ -66,7 +67,7 @@ class AppListAdapter(
                     listener.onItemClick(item)
                 }
                 appHolder.itemView.setOnLongClickListener {
-                    longClickListener?.onItemLongClick(item)
+                    longClickListener?.onItemLongClick(item, sharedViewModel)
                     true
                 }
             }
@@ -84,7 +85,7 @@ class AppListAdapter(
                     listener.onItemClick(item)
                 }
                 appHolder.itemView.setOnLongClickListener {
-                    longClickListener?.onItemLongClick(item)
+                    longClickListener?.onItemLongClick(item, sharedViewModel)
                     true
                 }
             }

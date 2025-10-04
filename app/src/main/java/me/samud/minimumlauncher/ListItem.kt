@@ -14,18 +14,35 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlin.reflect.KClass
 
 
-class UserAppBottomSheetDialog(private val context: Context, private val appInfo: AppInfo) {
+class UserAppBottomSheetDialog(
+    private val context: Context,
+    private val appInfo: AppInfo,
+    private val sharedViewModel: SharedViewModel
+) {
     fun show() {
         val bottomSheetDialog = BottomSheetDialog(context)
         val view = LayoutInflater.from(context).inflate(R.layout.bottom_sheet_menu, null)
         val menuLayout = view.findViewById<LinearLayout>(R.id.menu_layout)
+        val favoritesManager = FavoritesManager(context)
 
         // Create a list of menu items to add
-        val menuItems = listOf(
-            Triple("Add to favorite", android.R.drawable.ic_menu_add) {
-                // TODO: Implement add to favorite functionality
+        val menuItems = mutableListOf<Triple<String, Int, () -> Unit>>()
+
+        if (favoritesManager.isFavorite(appInfo.packageName)) {
+            menuItems.add(Triple("Remove from favorite", android.R.drawable.ic_menu_delete) {
+                favoritesManager.removeFavorite(appInfo.packageName)
+                sharedViewModel.notifyFavoritesChanged()
                 bottomSheetDialog.dismiss()
-            },
+            })
+        } else {
+            menuItems.add(Triple("Add to favorite", android.R.drawable.ic_menu_add) {
+                favoritesManager.addFavorite(appInfo.packageName)
+                sharedViewModel.notifyFavoritesChanged()
+                bottomSheetDialog.dismiss()
+            })
+        }
+
+        menuItems.addAll(listOf(
             Triple("Uninstall", android.R.drawable.ic_menu_delete) {
                 val intent = Intent(Intent.ACTION_DELETE)
                 intent.data = Uri.fromParts("package", appInfo.packageName, null)
@@ -42,7 +59,7 @@ class UserAppBottomSheetDialog(private val context: Context, private val appInfo
                 context.startActivity(intent)
                 bottomSheetDialog.dismiss()
             }
-        )
+        ))
 
         // Add each menu item
         menuItems.forEach { (text, iconResId, onClick) ->
@@ -55,19 +72,19 @@ class UserAppBottomSheetDialog(private val context: Context, private val appInfo
     }
 
     private fun createMenuItem(
-        text: String, 
-        iconResId: Int, 
+        text: String,
+        iconResId: Int,
         onClick: () -> Unit,
         menuLayout: LinearLayout
     ): LinearLayout {
         val menuItem = LayoutInflater.from(context).inflate(R.layout.bottom_sheet_menu_item, null, false) as LinearLayout
         val iconView = menuItem.findViewById<ImageView>(R.id.icon)
         val textView = menuItem.findViewById<TextView>(R.id.text)
-        
+
         textView.text = text
         iconView.setImageResource(iconResId)
-        
-        menuItem.setOnClickListener { 
+
+        menuItem.setOnClickListener {
             onClick()
         }
         return menuItem
@@ -80,7 +97,7 @@ sealed class ListItem {
     }
 
     interface LongClickable {
-        fun onLongClick(context: Context, fragmentManager: FragmentManager?): Boolean
+        fun onLongClick(context: Context, fragmentManager: FragmentManager?, sharedViewModel: SharedViewModel): Boolean
     }
 
     data class UserAppItem(val appInfo: AppInfo) : ListItem(), Launchable, LongClickable {
@@ -91,8 +108,8 @@ sealed class ListItem {
             }
         }
 
-        override fun onLongClick(context: Context, fragmentManager: FragmentManager?): Boolean {
-            UserAppBottomSheetDialog(context, appInfo).show()
+        override fun onLongClick(context: Context, fragmentManager: FragmentManager?, sharedViewModel: SharedViewModel): Boolean {
+            UserAppBottomSheetDialog(context, appInfo, sharedViewModel).show()
             return true
         }
     }
@@ -112,7 +129,7 @@ sealed class ListItem {
             // TODO: Not yet implemented
         }
 
-        override fun onLongClick(context: Context, fragmentManager: FragmentManager?): Boolean {
+        override fun onLongClick(context: Context, fragmentManager: FragmentManager?, sharedViewModel: SharedViewModel): Boolean {
             // TODO: Not yet implemented
             return true
         }
