@@ -109,20 +109,20 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListA
         // User's Favorites section
         val favoritesList = allApps.filter { it.isFavorite }
         if (favoritesList.isNotEmpty()) {
-            displayList.add(ListItem.HeaderItem("User's Favorites"))
+            displayList.add(ListItem.HeaderItem(getString(R.string.header_favorites)))
             displayList.addAll(favoritesList.map { ListItem.UserAppItem(it) })
         }
 
         // Installed Apps section
         val otherAppsList = allApps.filter { !it.isFavorite }
-        displayList.add(ListItem.HeaderItem("Installed Apps"))
+        displayList.add(ListItem.HeaderItem(getString(R.string.header_installed_apps)))
         displayList.addAll(otherAppsList.map { ListItem.UserAppItem(it) })
 
         // MinimalLauncher Apps section
-        displayList.add(ListItem.HeaderItem("MinimalLauncher Apps"))
+        displayList.add(ListItem.HeaderItem(getString(R.string.header_minimal_launcher_apps)))
         displayList.add(
             ListItem.InternalFragmentItem(
-                title = "Minimal Launcher Settings",
+                title = getString(R.string.title_minimal_launcher_settings),
                 destination = SettingsFragment::class
             )
         )
