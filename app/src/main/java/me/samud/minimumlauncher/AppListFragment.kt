@@ -64,7 +64,7 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListA
         // Search Results RecyclerView
         searchResultsRecyclerView = view.findViewById(R.id.search_results_recycler_view)
         searchResultsRecyclerView.layoutManager = LinearLayoutManager(context)
-        searchResultsAdapter = AppListAdapter(emptyList(), this, null, sharedViewModel)
+        searchResultsAdapter = AppListAdapter(emptyList(), this, this, sharedViewModel)
         searchResultsRecyclerView.adapter = searchResultsAdapter
 
         val appSource: AppSource = PackageManagerAppSource(requireActivity().packageManager)
@@ -147,15 +147,15 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListA
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 val query = s?.toString()?.lowercase(Locale.getDefault()) ?: ""
-                val filteredApps = if (query.isEmpty()) {
-                    emptyList()
+                val filteredItems = if (query.isEmpty()) {
+                    emptyList<ListItem>()
                 } else {
                     // The search filter remains the same, using the flat allApps list
                     allApps.filter {
                         it.name.lowercase(Locale.getDefault()).contains(query)
-                    }
+                    }.map { ListItem.UserAppItem(it) }
                 }
-                searchResultsAdapter.updateApps(filteredApps)
+                searchResultsAdapter.updateItems(filteredItems)
             }
             override fun afterTextChanged(s: android.text.Editable?) {}
         })

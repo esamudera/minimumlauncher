@@ -105,11 +105,6 @@ class AppListAdapter(
         notifyDataSetChanged()
     }
 
-    fun updateApps(newApps: List<AppInfo>) {
-        items = newApps.map { ListItem.UserAppItem(it) }
-        notifyDataSetChanged()
-    }
-
     companion object {
         private const val VIEW_TYPE_LAUNCHABLE = 0
         private const val VIEW_TYPE_HEADER = 1
