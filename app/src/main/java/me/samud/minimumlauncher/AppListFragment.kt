@@ -115,8 +115,17 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListA
 
         // Installed Apps section
         val otherAppsList = allApps.filter { !it.isFavorite }
-        displayList.add(ListItem.HeaderItem(getString(R.string.header_installed_apps)))
-        displayList.addAll(otherAppsList.map { ListItem.UserAppItem(it) })
+        otherAppsList
+            .filter { it.name.isNotEmpty() }
+            .groupBy {
+                val firstChar = it.name.first()
+                if (firstChar.isDigit()) '#' else firstChar.uppercaseChar()
+            }
+            .toSortedMap()
+            .forEach { (headerChar, apps) ->
+                displayList.add(ListItem.HeaderItem(headerChar.toString()))
+                displayList.addAll(apps.map { ListItem.UserAppItem(it) })
+            }
 
         // MinimalLauncher Apps section
         displayList.add(ListItem.HeaderItem(getString(R.string.header_minimal_launcher_apps)))

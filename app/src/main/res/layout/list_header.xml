@@ -9,4 +9,5 @@
     android:paddingBottom="8dp"
     android:textSize="14sp"
     android:textStyle="bold"
-    android:textColor="?android:attr/textColorPrimary" />
+    android:textColor="?android:attr/textColorPrimary"
+    android:alpha="0.5" />
