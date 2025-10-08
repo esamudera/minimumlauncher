@@ -4,15 +4,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.widget.Toolbar
-import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.activity.OnBackPressedCallback
-import com.google.android.material.appbar.AppBarLayout
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.search.SearchView
-import androidx.lifecycle.ViewModelProvider
 import java.util.Locale
 
 class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListAdapter.OnItemLongClickListener {
@@ -22,7 +20,6 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListA
     private lateinit var searchResultsRecyclerView: RecyclerView
     private lateinit var searchResultsAdapter: AppListAdapter
     private lateinit var appLoader: AppLoader
-    private lateinit var toolbar: Toolbar
     private lateinit var searchView: SearchView
     private lateinit var allApps: List<AppInfo>
     private lateinit var sharedViewModel: SharedViewModel
@@ -36,29 +33,11 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListA
 
         val view = inflater.inflate(R.layout.fragment_app_list, container, false)
 
-        // Set AppBarLayout height to ~40% of screen height
-        val appBarLayout = view.findViewById<AppBarLayout>(R.id.app_bar)
-        val displayMetrics = requireContext().resources.displayMetrics
-        val screenHeight = displayMetrics.heightPixels
-        appBarLayout.layoutParams.height = (screenHeight * 0.40).toInt()
-
-        appBarLayout.addOnOffsetChangedListener { appBarLayout, verticalOffset ->
-            // Consider the AppBarLayout collapsed as soon as it starts to move up from the expanded position.
-            val isCollapsed = verticalOffset < 0
-            sharedViewModel.isAppBarCollapsed = isCollapsed
-        }
-
-        // Restore the collapsed/expanded state from the ViewModel after layout
-        // appBarLayout.post {
-            appBarLayout.setExpanded(!sharedViewModel.isAppBarCollapsed, false) // false = no animation
-        // }
-
         // Main RecyclerView
         recyclerView = view.findViewById(R.id.app_list_recycler_view)
         recyclerView.layoutManager = LinearLayoutManager(context)
 
         // Search UI
-        toolbar = view.findViewById(R.id.toolbar)
         searchView = view.findViewById(R.id.search_view)
 
         // Search Results RecyclerView
@@ -71,7 +50,7 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListA
         appLoader = AppLoader(appSource)
 
         loadApps()
-        setupSearch()
+        setupSearch(view)
 
         sharedViewModel.favoritesChanged.observe(viewLifecycleOwner) { changed ->
             if (changed) {
@@ -105,6 +84,11 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListA
 
         // Create the structured list for display
         val displayList = mutableListOf<ListItem>()
+
+        // Widget Area
+        val displayMetrics = requireContext().resources.displayMetrics
+        val screenHeight = displayMetrics.heightPixels
+        displayList.add(ListItem.WidgetItem((screenHeight * 0.45).toInt()))
 
         // User's Favorites section
         val favoritesList = allApps.filter { it.isFavorite }
@@ -145,7 +129,7 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListA
         }
     }
 
-    private fun setupSearch() {
+    private fun setupSearch(view: View) {
         searchView
             .editText
             .setOnEditorActionListener { v, actionId, event ->
@@ -169,14 +153,9 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListA
             override fun afterTextChanged(s: android.text.Editable?) {}
         })
 
-        toolbar.inflateMenu(R.menu.main_toolbar_menu)
-        toolbar.setOnMenuItemClickListener { menuItem ->
-            if (menuItem.itemId == R.id.action_search) {
-                searchView.show()
-                true
-            } else {
-                false
-            }
+        val fabSearch = view.findViewById<FloatingActionButton>(R.id.fab_search)
+        fabSearch.setOnClickListener {
+            searchView.show()
         }
     }
 

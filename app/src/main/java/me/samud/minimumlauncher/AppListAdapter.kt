@@ -33,12 +33,21 @@ class AppListAdapter(
         val headerTitle: TextView = itemView.findViewById(R.id.header_title)
     }
 
+    // View holder for widget area
+    class WidgetViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        fun bind(height: Int) {
+            itemView.layoutParams.height = height
+            itemView.requestLayout()
+        }
+    }
+
     override fun getItemViewType(position: Int): Int {
         return when (items[position]) {
             is ListItem.UserAppItem -> VIEW_TYPE_LAUNCHABLE
             is ListItem.InternalFragmentItem -> VIEW_TYPE_LAUNCHABLE
             is ListItem.WebShortcutItem -> VIEW_TYPE_LAUNCHABLE
             is ListItem.HeaderItem -> VIEW_TYPE_HEADER
+            is ListItem.WidgetItem -> VIEW_TYPE_WIDGET
         }
     }
 
@@ -53,6 +62,11 @@ class AppListAdapter(
                 val view = LayoutInflater.from(parent.context)
                     .inflate(R.layout.list_header, parent, false)
                 HeaderViewHolder(view)
+            }
+            VIEW_TYPE_WIDGET -> {
+                val view = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.widget_area_item, parent, false)
+                WidgetViewHolder(view)
             }
             else -> throw IllegalArgumentException("Invalid view type")
         }
@@ -93,6 +107,10 @@ class AppListAdapter(
                 val headerHolder = holder as HeaderViewHolder
                 headerHolder.headerTitle.text = item.title
             }
+            is ListItem.WidgetItem -> {
+                val widgetHolder = holder as WidgetViewHolder
+                widgetHolder.bind(item.height)
+            }
         }
     }
 
@@ -108,5 +126,6 @@ class AppListAdapter(
     companion object {
         private const val VIEW_TYPE_LAUNCHABLE = 0
         private const val VIEW_TYPE_HEADER = 1
+        private const val VIEW_TYPE_WIDGET = 2
     }
 }
