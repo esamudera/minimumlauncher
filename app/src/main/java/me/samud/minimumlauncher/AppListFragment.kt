@@ -1,5 +1,6 @@
 package me.samud.minimumlauncher
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -59,17 +60,6 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListA
             }
         }
 
-        val backCallback = object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                if (searchView.isShowing) {
-                    searchView.editText.text.clear()
-                    searchView.hide()
-                }
-                // If searchView is not showing, do nothing to prevent app from closing.
-            }
-        }
-        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, backCallback)
-
         return view
     }
 
@@ -114,9 +104,9 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListA
         // MinimalLauncher Apps section
         displayList.add(ListItem.HeaderItem(getString(R.string.header_minimal_launcher_apps)))
         displayList.add(
-            ListItem.InternalFragmentItem(
+            ListItem.InternalActivityItem(
                 title = getString(R.string.title_minimal_launcher_settings),
-                destination = SettingsFragment::class
+                intent = Intent(requireContext(), SettingsActivity::class.java)
             )
         )
 
@@ -150,6 +140,7 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListA
                 }
                 searchResultsAdapter.updateItems(filteredItems)
             }
+
             override fun afterTextChanged(s: android.text.Editable?) {}
         })
 

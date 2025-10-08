@@ -44,7 +44,7 @@ class AppListAdapter(
     override fun getItemViewType(position: Int): Int {
         return when (items[position]) {
             is ListItem.UserAppItem -> VIEW_TYPE_LAUNCHABLE
-            is ListItem.InternalFragmentItem -> VIEW_TYPE_LAUNCHABLE
+            is ListItem.InternalActivityItem -> VIEW_TYPE_LAUNCHABLE
             is ListItem.WebShortcutItem -> VIEW_TYPE_LAUNCHABLE
             is ListItem.HeaderItem -> VIEW_TYPE_HEADER
             is ListItem.WidgetItem -> VIEW_TYPE_WIDGET
@@ -85,7 +85,7 @@ class AppListAdapter(
                     true
                 }
             }
-            is ListItem.InternalFragmentItem -> {
+            is ListItem.InternalActivityItem -> {
                 val appHolder = holder as LaunchableViewHolder
                 appHolder.appName.text = item.title
                 appHolder.itemView.setOnClickListener {

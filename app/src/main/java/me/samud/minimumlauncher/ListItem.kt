@@ -31,13 +31,9 @@ sealed class ListItem {
         }
     }
 
-    data class InternalFragmentItem(val title: String, val destination: KClass<out Fragment>) : ListItem(),
-        Launchable {
+    data class InternalActivityItem(val title: String, val intent: Intent) : ListItem(), Launchable {
         override fun onLaunch(context: Context, fragmentManager: FragmentManager?) {
-            fragmentManager?.beginTransaction()
-                ?.replace(R.id.fragment_container, destination.java.newInstance())
-                ?.addToBackStack(null)
-                ?.commit()
+            context.startActivity(intent)
         }
     }
 
