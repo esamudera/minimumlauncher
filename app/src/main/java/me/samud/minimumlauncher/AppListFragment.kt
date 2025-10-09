@@ -168,4 +168,11 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListA
             item.onLongClick(requireContext(), activity?.supportFragmentManager, sharedViewModel)
         }
     }
+
+    fun resetUI() {
+        if (searchView.isShowing) {
+            searchView.hide()
+        }
+        recyclerView.scrollToPosition(0)
+    }
 }
