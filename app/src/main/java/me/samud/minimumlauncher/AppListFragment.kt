@@ -120,6 +120,11 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListA
     }
 
     private fun setupSearch(view: View) {
+        searchView.addTransitionListener { _, _, newState ->
+            if (newState == SearchView.TransitionState.HIDDEN) {
+                searchView.editText.text.clear()
+            }
+        }
         searchView
             .editText
             .setOnEditorActionListener { v, actionId, event ->
