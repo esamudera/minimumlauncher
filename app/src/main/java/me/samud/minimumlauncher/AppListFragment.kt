@@ -24,7 +24,6 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListA
     private lateinit var searchView: SearchView
     private lateinit var allApps: List<AppInfo>
     private lateinit var sharedViewModel: SharedViewModel
-    private var appsLoaded = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -56,7 +55,7 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListA
 
         sharedViewModel.favoritesChanged.observe(viewLifecycleOwner) { changed ->
             if (changed) {
-                updateDisplayList()
+                loadApps()
                 sharedViewModel.onFavoritesChangedHandled()
             }
         }
@@ -65,30 +64,11 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListA
     }
 
     private fun loadApps() {
-        // Only load from package manager once
-        if (appsLoaded && ::allApps.isInitialized) {
-            updateDisplayList()
-            return
-        }
-        
         val favoritesManager = FavoritesManager(requireContext())
         val favoritePackageNames = favoritesManager.getFavorites()
 
         // Load all apps for search functionality
         allApps = appLoader.loadAndSortApps().map { appInfo ->
-            appInfo.apply { isFavorite = favoritePackageNames.contains(appInfo.packageName) }
-        }
-
-        updateDisplayList()
-        appsLoaded = true
-    }
-
-    private fun updateDisplayList() {
-        val favoritesManager = FavoritesManager(requireContext())
-        val favoritePackageNames = favoritesManager.getFavorites()
-
-        // Update favorites status for existing apps
-        allApps = allApps.map { appInfo ->
             appInfo.apply { isFavorite = favoritePackageNames.contains(appInfo.packageName) }
         }
 
