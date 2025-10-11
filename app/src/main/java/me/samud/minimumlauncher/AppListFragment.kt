@@ -20,10 +20,10 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListA
     private lateinit var appListAdapter: AppListAdapter
     private lateinit var searchResultsRecyclerView: RecyclerView
     private lateinit var searchResultsAdapter: AppListAdapter
-    private lateinit var appLoader: AppLoader
     private lateinit var searchView: SearchView
     private lateinit var allApps: List<AppInfo>
     private lateinit var sharedViewModel: SharedViewModel
+    private lateinit var appListViewModel: AppListViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -47,75 +47,34 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListA
         searchResultsAdapter = AppListAdapter(emptyList(), this, this, sharedViewModel)
         searchResultsRecyclerView.adapter = searchResultsAdapter
 
-        val appSource: AppSource = PackageManagerAppSource(requireActivity().packageManager)
-        appLoader = AppLoader(appSource)
-
-        loadApps()
         setupSearch(view)
-
-        sharedViewModel.favoritesChanged.observe(viewLifecycleOwner) { changed ->
-            if (changed) {
-                loadApps()
-                sharedViewModel.onFavoritesChangedHandled()
-            }
-        }
 
         return view
     }
 
-    private fun loadApps() {
-        val favoritesManager = FavoritesManager(requireContext())
-        val favoritePackageNames = favoritesManager.getFavorites()
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-        // Load all apps for search functionality
-        allApps = appLoader.loadAndSortApps().map { appInfo ->
-            appInfo.apply { isFavorite = favoritePackageNames.contains(appInfo.packageName) }
+        // Initialize the AppListViewModel without a factory
+        appListViewModel = ViewModelProvider(this)[AppListViewModel::class.java]
+
+        // Observe the app list from the ViewModel
+        appListViewModel.items.observe(viewLifecycleOwner) { displayList ->
+            // Initialize the adapter with the structured list
+            if (::appListAdapter.isInitialized) {
+                appListAdapter.updateItems(displayList)
+            } else {
+                appListAdapter = AppListAdapter(displayList, this, this, sharedViewModel)
+                recyclerView.adapter = appListAdapter
+            }
         }
 
-        // Create the structured list for display
-        val displayList = mutableListOf<ListItem>()
-
-        // Widget Area
-        val displayMetrics = requireContext().resources.displayMetrics
-        val screenHeight = displayMetrics.heightPixels
-        displayList.add(ListItem.WidgetItem((screenHeight * 0.45).toInt()))
-
-        // User's Favorites section
-        val favoritesList = allApps.filter { it.isFavorite }
-        if (favoritesList.isNotEmpty()) {
-            displayList.add(ListItem.HeaderItem(getString(R.string.header_favorites)))
-            displayList.addAll(favoritesList.map { ListItem.UserAppItem(it) })
-        }
-
-        // Installed Apps section
-        val otherAppsList = allApps.filter { !it.isFavorite }
-        otherAppsList
-            .filter { it.name.isNotEmpty() }
-            .groupBy {
-                val firstChar = it.name.first()
-                if (firstChar.isDigit()) '#' else firstChar.uppercaseChar()
+        // Observe favorites changes and trigger a refresh in the AppListViewModel
+        sharedViewModel.favoritesChanged.observe(viewLifecycleOwner) { changed ->
+            if (changed) {
+                appListViewModel.refreshApps()
+                sharedViewModel.onFavoritesChangedHandled()
             }
-            .toSortedMap()
-            .forEach { (headerChar, apps) ->
-                displayList.add(ListItem.HeaderItem(headerChar.toString()))
-                displayList.addAll(apps.map { ListItem.UserAppItem(it) })
-            }
-
-        // MinimalLauncher Apps section
-        displayList.add(ListItem.HeaderItem(getString(R.string.header_minimal_launcher_apps)))
-        displayList.add(
-            ListItem.InternalActivityItem(
-                title = getString(R.string.title_minimal_launcher_settings),
-                intent = Intent(requireContext(), SettingsActivity::class.java)
-            )
-        )
-
-        // Initialize the adapter with the structured list
-        if (::appListAdapter.isInitialized) {
-            appListAdapter.updateItems(displayList)
-        } else {
-            appListAdapter = AppListAdapter(displayList, this, this, sharedViewModel)
-            recyclerView.adapter = appListAdapter
         }
     }
 

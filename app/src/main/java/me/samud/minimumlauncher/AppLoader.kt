@@ -4,7 +4,7 @@ package me.samud.minimumlauncher
 
 class AppLoader(private val appSource: AppSource) { // Changed dependency to AppSource
 
-    fun loadAndSortApps(): List<AppInfo> {
+    suspend fun loadAndSortApps(): List<AppInfo> {
         val apps = appSource.getLaunchableApps().toMutableList() // Get apps from AppSource
 
         // Sort apps alphabetically
