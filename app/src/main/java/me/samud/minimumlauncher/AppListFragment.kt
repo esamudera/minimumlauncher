@@ -21,7 +21,7 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListA
     private lateinit var searchResultsRecyclerView: RecyclerView
     private lateinit var searchResultsAdapter: AppListAdapter
     private lateinit var searchView: SearchView
-    private lateinit var allApps: List<AppInfo>
+    private var currentDisplayList: List<ListItem> = emptyList()
     private lateinit var sharedViewModel: SharedViewModel
     private lateinit var appListViewModel: AppListViewModel
 
@@ -60,6 +60,9 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListA
 
         // Observe the app list from the ViewModel
         appListViewModel.items.observe(viewLifecycleOwner) { displayList ->
+            // Store the current list for searching
+            currentDisplayList = displayList
+
             // Initialize the adapter with the structured list
             if (::appListAdapter.isInitialized) {
                 appListAdapter.updateItems(displayList)
@@ -97,10 +100,10 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListA
                 val filteredItems = if (query.isEmpty()) {
                     emptyList<ListItem>()
                 } else {
-                    // The search filter remains the same, using the flat allApps list
-                    allApps.filter {
-                        it.name.lowercase(Locale.getDefault()).contains(query)
-                    }.map { ListItem.UserAppItem(it) }
+                    // Filter the currentDisplayList for UserAppItems and then by name
+                    currentDisplayList.filterIsInstance<ListItem.UserAppItem>().filter {
+                        it.appInfo.name.lowercase(Locale.getDefault()).contains(query)
+                    }
                 }
                 searchResultsAdapter.updateItems(filteredItems)
             }
