@@ -4,6 +4,7 @@ import android.animation.ObjectAnimator
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 
@@ -11,12 +12,12 @@ class MainActivity : AppCompatActivity() {
 
     private var pausedTimestamp: Long = 0
     private val resetDelay: Long = 10000 // 10 seconds in milliseconds
-    private lateinit var rootLayout: ConstraintLayout
+    private lateinit var fragmentContainer: FrameLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        rootLayout = findViewById(R.id.root_layout)
+        fragmentContainer = findViewById(R.id.fragment_container)
 
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
@@ -38,9 +39,9 @@ class MainActivity : AppCompatActivity() {
 
         val navigationMode = GestureNavigationHelper.getNavigationMode(this)
         if (navigationMode != 0) { // Apply transition for gesture nav (1) and older OS (-1)
-            rootLayout.alpha = 0f
-            val fadeIn = ObjectAnimator.ofFloat(rootLayout, "alpha", 0f, 1f)
-            fadeIn.duration = 600
+            fragmentContainer.alpha = 0f
+            val fadeIn = ObjectAnimator.ofFloat(fragmentContainer, "alpha", 0f, 1f)
+            fadeIn.duration = 650
             fadeIn.start()
         }
     }
@@ -49,7 +50,7 @@ class MainActivity : AppCompatActivity() {
         super.onPause()
         pausedTimestamp = System.currentTimeMillis()
         if (GestureNavigationHelper.getNavigationMode(this) != 0) {
-            rootLayout.alpha = 0f
+            fragmentContainer.alpha = 0f
         }
     }
 }
