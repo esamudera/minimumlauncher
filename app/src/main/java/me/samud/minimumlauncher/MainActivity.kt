@@ -1,12 +1,8 @@
 package me.samud.minimumlauncher
 
-import android.animation.ObjectAnimator
 import android.os.Bundle
-import android.util.Log
-import android.view.View
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
-import androidx.constraintlayout.widget.ConstraintLayout
 
 class MainActivity : AppCompatActivity() {
 
@@ -29,28 +25,22 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         val currentTime = System.currentTimeMillis()
-        // Reset UI if the app was paused for more than a minute
+        // Reset UI if the app was paused for more than the delay
         if (pausedTimestamp > 0 && (currentTime - pausedTimestamp) > resetDelay) {
             val fragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
             if (fragment is AppListFragment) {
                 fragment.resetUI()
             }
+            // Re-apply the transition when the UI is reset
         }
 
-        val navigationMode = GestureNavigationHelper.getNavigationMode(this)
-        if (navigationMode != 0) { // Apply transition for gesture nav (1) and older OS (-1)
-            fragmentContainer.alpha = 0f
-            val fadeIn = ObjectAnimator.ofFloat(fragmentContainer, "alpha", 0f, 1f)
-            fadeIn.duration = 650
-            fadeIn.start()
-        }
+        GestureNavigationHelper.applyGestureNavigationTransition(fragmentContainer, this)
     }
 
     override fun onPause() {
         super.onPause()
         pausedTimestamp = System.currentTimeMillis()
-        if (GestureNavigationHelper.getNavigationMode(this) != 0) {
-            fragmentContainer.alpha = 0f
-        }
+        // Prepare for the transition on resume
+        GestureNavigationHelper.prepareTransition(fragmentContainer, this)
     }
 }
