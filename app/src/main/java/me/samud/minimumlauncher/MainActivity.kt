@@ -1,16 +1,22 @@
 package me.samud.minimumlauncher
 
+import android.animation.ObjectAnimator
 import android.os.Bundle
+import android.util.Log
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 
 class MainActivity : AppCompatActivity() {
 
     private var pausedTimestamp: Long = 0
-        private val resetDelay: Long = 10000 // 10 seconds in milliseconds
+    private val resetDelay: Long = 10000 // 10 seconds in milliseconds
+    private lateinit var rootLayout: ConstraintLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        rootLayout = findViewById(R.id.root_layout)
 
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
@@ -29,10 +35,21 @@ class MainActivity : AppCompatActivity() {
                 fragment.resetUI()
             }
         }
+
+        val navigationMode = GestureNavigationHelper.getNavigationMode(this)
+        if (navigationMode != 0) { // Apply transition for gesture nav (1) and older OS (-1)
+            rootLayout.alpha = 0f
+            val fadeIn = ObjectAnimator.ofFloat(rootLayout, "alpha", 0f, 1f)
+            fadeIn.duration = 600
+            fadeIn.start()
+        }
     }
 
     override fun onPause() {
         super.onPause()
         pausedTimestamp = System.currentTimeMillis()
+        if (GestureNavigationHelper.getNavigationMode(this) != 0) {
+            rootLayout.alpha = 0f
+        }
     }
 }
