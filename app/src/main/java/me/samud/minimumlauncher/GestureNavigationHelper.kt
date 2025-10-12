@@ -37,7 +37,8 @@ object GestureNavigationHelper {
         if (getNavigationMode(activity) != 0) { // Apply for gesture nav (1) and older OS (-1)
             view.alpha = 0f
             val fadeIn = ObjectAnimator.ofFloat(view, "alpha", 0f, 1f)
-            fadeIn.duration = 650
+            fadeIn.duration = 300
+            fadeIn.startDelay = 400
             fadeIn.start()
         }
     }
