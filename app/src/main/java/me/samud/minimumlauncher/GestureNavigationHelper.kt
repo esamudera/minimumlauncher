@@ -38,8 +38,8 @@ object GestureNavigationHelper {
         if (getNavigationMode(activity) != 0) { // Apply for gesture nav (1) and older OS (-1)
             view.alpha = 0f
             val fadeIn = ObjectAnimator.ofFloat(view, "alpha", 0f, 1f)
-            fadeIn.duration = 50
-            fadeIn.startDelay = 500
+            fadeIn.duration = 260
+            fadeIn.startDelay = 300
             
             // Set the interpolator to make the animation start slow and speed up
             fadeIn.interpolator = AccelerateInterpolator()
@@ -48,12 +48,4 @@ object GestureNavigationHelper {
         }
     }
 
-    /**
-     * Prepares a view for a fade-in transition by setting its alpha to 0.
-     */
-    fun prepareTransition(view: View, activity: Activity) {
-        if (getNavigationMode(activity) != 0) {
-            view.alpha = 0f
-        }
-    }
 }
