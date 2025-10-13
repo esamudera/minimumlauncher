@@ -6,6 +6,7 @@ import android.graphics.Insets
 import android.os.Build
 import android.view.View
 import android.view.WindowInsets
+import android.view.animation.AccelerateInterpolator
 
 object GestureNavigationHelper {
 
@@ -39,6 +40,10 @@ object GestureNavigationHelper {
             val fadeIn = ObjectAnimator.ofFloat(view, "alpha", 0f, 1f)
             fadeIn.duration = 50
             fadeIn.startDelay = 500
+            
+            // Set the interpolator to make the animation start slow and speed up
+            fadeIn.interpolator = AccelerateInterpolator()
+            
             fadeIn.start()
         }
     }
