@@ -131,6 +131,10 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListA
         }
     }
 
+    fun notInBaseFragment() : Boolean {
+        return searchView.isShowing
+    }
+
     fun resetUI() {
         if (searchView.isShowing) {
             searchView.hide()

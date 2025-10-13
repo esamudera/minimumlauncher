@@ -36,18 +36,21 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         val currentTime = System.currentTimeMillis()
-        // Reset UI if the app was paused for more than the delay
+
+        val fragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
+
         if (pausedTimestamp > 0 && (currentTime - pausedTimestamp) > resetDelay) {
-            val fragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
             if (fragment is AppListFragment) {
                 fragment.resetUI()
             }
-            // Re-apply the transition when the UI is reset
         }
 
         // Apply the gesture navigation transition ONLY if resumed from the home key/gesture.
         if (isResumedFromHomeKey) {
             GestureNavigationHelper.applyGestureNavigationTransition(fragmentContainer, this)
+            if (fragment is AppListFragment && fragment.notInBaseFragment()) {
+                fragment.resetUI()
+            }
         }
 
         isResumedFromHomeKey = false
