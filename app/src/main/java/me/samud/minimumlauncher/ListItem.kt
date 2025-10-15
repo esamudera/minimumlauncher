@@ -51,4 +51,6 @@ sealed class ListItem {
     data class HeaderItem(val title: String) : ListItem()
 
     data class WidgetItem(val height: Int) : ListItem()
+
+    data class EmptyStateItem(val messageResId: Int) : ListItem()
 }

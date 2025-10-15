@@ -41,6 +41,11 @@ class AppListAdapter(
         }
     }
 
+    // View holder for empty state
+    class EmptyStateViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val message: TextView = itemView.findViewById(R.id.empty_state_message)
+    }
+
     override fun getItemViewType(position: Int): Int {
         return when (items[position]) {
             is ListItem.UserAppItem -> VIEW_TYPE_LAUNCHABLE
@@ -48,6 +53,7 @@ class AppListAdapter(
             is ListItem.WebShortcutItem -> VIEW_TYPE_LAUNCHABLE
             is ListItem.HeaderItem -> VIEW_TYPE_HEADER
             is ListItem.WidgetItem -> VIEW_TYPE_WIDGET
+            is ListItem.EmptyStateItem -> VIEW_TYPE_EMPTY_STATE
         }
     }
 
@@ -67,6 +73,11 @@ class AppListAdapter(
                 val view = LayoutInflater.from(parent.context)
                     .inflate(R.layout.widget_area_item, parent, false)
                 WidgetViewHolder(view)
+            }
+            VIEW_TYPE_EMPTY_STATE -> {
+                val view = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.empty_state_item, parent, false)
+                EmptyStateViewHolder(view)
             }
             else -> throw IllegalArgumentException("Invalid view type")
         }
@@ -111,6 +122,10 @@ class AppListAdapter(
                 val widgetHolder = holder as WidgetViewHolder
                 widgetHolder.bind(item.height)
             }
+            is ListItem.EmptyStateItem -> {
+                val emptyStateHolder = holder as EmptyStateViewHolder
+                emptyStateHolder.message.setText(item.messageResId)
+            }
         }
     }
 
@@ -127,5 +142,6 @@ class AppListAdapter(
         private const val VIEW_TYPE_LAUNCHABLE = 0
         private const val VIEW_TYPE_HEADER = 1
         private const val VIEW_TYPE_WIDGET = 2
+        private const val VIEW_TYPE_EMPTY_STATE = 3
     }
 }

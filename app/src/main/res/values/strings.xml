@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">Minimum Launcher</string>
     <string name="header_favorites">★</string>
-    <string name="header_minimal_launcher_apps">Minimal Launcher Apps</string>
-    <string name="title_minimal_launcher_settings">Launcher Settings</string>
+    <string name="header_launcher_apps">Minimum Launcher</string>
+    <string name="header_apps">Apps</string>
+    <string name="title_launcher_settings">Launcher Settings</string>
+    <string name="msg_empty_search_results">Search results will appear here</string>
 </resources>

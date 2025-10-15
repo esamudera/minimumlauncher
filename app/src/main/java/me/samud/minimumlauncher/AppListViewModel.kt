@@ -73,10 +73,10 @@ class AppListViewModel(application: Application) : AndroidViewModel(application)
             }
 
         // MinimalLauncher Apps section
-        displayList.add(ListItem.HeaderItem(context.getString(R.string.header_minimal_launcher_apps)))
+        displayList.add(ListItem.HeaderItem(context.getString(R.string.header_launcher_apps)))
         displayList.add(
             ListItem.InternalActivityItem(
-                title = context.getString(R.string.title_minimal_launcher_settings),
+                title = context.getString(R.string.title_launcher_settings),
                 // Note: This requires an Activity context, but ViewModel has Application context.
                 // For launching, the context from the fragment is better. We'll pass it in the fragment.
                 // However, for creating the Intent, Application context is fine.
