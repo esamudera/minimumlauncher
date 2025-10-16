@@ -9,11 +9,15 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.Locale
 
 class AppListViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _items = MutableLiveData<List<ListItem>>()
     val items: LiveData<List<ListItem>> = _items
+
+    private val _searchResults = MutableLiveData<List<ListItem>>()
+    val searchResults: LiveData<List<ListItem>> = _searchResults
 
     // Dependencies are now created inside the ViewModel
     private val context: Context = getApplication<Application>().applicationContext
@@ -85,5 +89,45 @@ class AppListViewModel(application: Application) : AndroidViewModel(application)
         )
 
         return displayList
+    }
+
+    fun performSearch(query: String, allItems: List<ListItem>, appsHeader: String, launcherAppsHeader: String, emptyStateResId: Int) {
+        viewModelScope.launch(Dispatchers.Default) {
+            val finalList = mutableListOf<ListItem>()
+            val lowerCaseQuery = query.lowercase(Locale.getDefault())
+
+            if (lowerCaseQuery.isNotEmpty()) {
+                // Filter all launchable items
+                val allMatchingItems = allItems.filterIsInstance<ListItem.Launchable>().filter { item ->
+                    when (item) {
+                        is ListItem.UserAppItem -> item.appInfo.name.lowercase(Locale.getDefault()).contains(lowerCaseQuery)
+                        is ListItem.InternalActivityItem -> item.title.lowercase(Locale.getDefault()).contains(lowerCaseQuery)
+                        is ListItem.WebShortcutItem -> item.title.lowercase(Locale.getDefault()).contains(lowerCaseQuery)
+                        else -> false
+                    }
+                }
+
+                // Group items by category
+                val apps = allMatchingItems.filterIsInstance<ListItem.UserAppItem>() + allMatchingItems.filterIsInstance<ListItem.WebShortcutItem>()
+                val internalItems = allMatchingItems.filterIsInstance<ListItem.InternalActivityItem>()
+
+                // Add headers and their corresponding items
+                if (apps.isNotEmpty()) {
+                    finalList.add(ListItem.HeaderItem(appsHeader))
+                    finalList.addAll(apps)
+                }
+                if (internalItems.isNotEmpty()) {
+                    finalList.add(ListItem.HeaderItem(launcherAppsHeader))
+                    finalList.addAll(internalItems)
+                }
+            }
+
+            // If no results were found, add the empty state item
+            if (finalList.isEmpty()) {
+                finalList.add(ListItem.EmptyStateItem(emptyStateResId))
+            }
+
+            _searchResults.postValue(finalList)
+        }
     }
 }

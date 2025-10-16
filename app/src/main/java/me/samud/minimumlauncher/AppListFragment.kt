@@ -14,7 +14,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.search.SearchView
-import java.util.Locale
 
 class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListAdapter.OnItemLongClickListener {
 
@@ -74,6 +73,11 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListA
             }
         }
 
+        // Observe search results from the ViewModel
+        appListViewModel.searchResults.observe(viewLifecycleOwner) { searchList ->
+            searchResultsAdapter.updateItems(searchList)
+        }
+
         // Observe favorites changes and trigger a refresh in the AppListViewModel
         sharedViewModel.favoritesChanged.observe(viewLifecycleOwner) { changed ->
             if (changed) {
@@ -87,7 +91,13 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListA
         searchView.addTransitionListener { _, _, newState ->
             if (newState == SearchView.TransitionState.SHOWING) {
                 // Trigger search with an empty query when the view is shown
-                performSearch("")
+                appListViewModel.performSearch(
+                    query = "",
+                    allItems = currentDisplayList,
+                    appsHeader = getString(R.string.header_apps),
+                    launcherAppsHeader = getString(R.string.header_launcher_apps),
+                    emptyStateResId = R.string.msg_empty_search_results
+                )
             } else if (newState == SearchView.TransitionState.HIDDEN) {
                 searchView.editText.text.clear()
             }
@@ -102,7 +112,13 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListA
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 val query = s?.toString() ?: ""
-                performSearch(query)
+                appListViewModel.performSearch(
+                    query = query,
+                    allItems = currentDisplayList,
+                    appsHeader = getString(R.string.header_apps),
+                    launcherAppsHeader = getString(R.string.header_launcher_apps),
+                    emptyStateResId = R.string.msg_empty_search_results
+                )
             }
 
             override fun afterTextChanged(s: android.text.Editable?) {}
@@ -112,44 +128,6 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListA
         fabSearch.setOnClickListener {
             searchView.show()
         }
-    }
-
-    private fun performSearch(query: String) {
-        val finalList = mutableListOf<ListItem>()
-        val lowerCaseQuery = query.lowercase(Locale.getDefault())
-
-        if (lowerCaseQuery.isNotEmpty()) {
-            // Filter all launchable items
-            val allMatchingItems = currentDisplayList.filterIsInstance<ListItem.Launchable>().filter { item ->
-                when (item) {
-                    is ListItem.UserAppItem -> item.appInfo.name.lowercase(Locale.getDefault()).contains(lowerCaseQuery)
-                    is ListItem.InternalActivityItem -> item.title.lowercase(Locale.getDefault()).contains(lowerCaseQuery)
-                    is ListItem.WebShortcutItem -> item.title.lowercase(Locale.getDefault()).contains(lowerCaseQuery)
-                    else -> false
-                }
-            }
-
-            // Group items by category
-            val apps = allMatchingItems.filterIsInstance<ListItem.UserAppItem>() + allMatchingItems.filterIsInstance<ListItem.WebShortcutItem>()
-            val internalItems = allMatchingItems.filterIsInstance<ListItem.InternalActivityItem>()
-
-            // Add headers and their corresponding items
-            if (apps.isNotEmpty()) {
-                finalList.add(ListItem.HeaderItem(getString(R.string.header_apps)))
-                finalList.addAll(apps)
-            }
-            if (internalItems.isNotEmpty()) {
-                finalList.add(ListItem.HeaderItem(getString(R.string.header_launcher_apps)))
-                finalList.addAll(internalItems)
-            }
-        }
-
-        // If no results were found, add the empty state item
-        if (finalList.isEmpty()) {
-            finalList.add(ListItem.EmptyStateItem(R.string.msg_empty_search_results))
-        }
-
-        searchResultsAdapter.updateItems(finalList)
     }
 
     override fun onItemClick(item: ListItem.Launchable) {
