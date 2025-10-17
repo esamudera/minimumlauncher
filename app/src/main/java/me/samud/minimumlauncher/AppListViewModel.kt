@@ -87,6 +87,12 @@ class AppListViewModel(application: Application) : AndroidViewModel(application)
                 intent = android.content.Intent(context, SettingsActivity::class.java)
             )
         )
+        displayList.add(
+            ListItem.InternalActivityItem(
+                title = context.getString(R.string.title_manage_widgets),
+                intent = android.content.Intent(context, ManageWidgetsActivity::class.java)
+            )
+        )
 
         return displayList
     }

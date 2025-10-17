@@ -4,5 +4,6 @@
     <string name="header_launcher_apps">Minimum Launcher</string>
     <string name="header_apps">Apps</string>
     <string name="title_launcher_settings">Launcher Settings</string>
+    <string name="title_manage_widgets">Manage Widgets</string>
     <string name="msg_empty_search_results">Search results will appear here</string>
 </resources>
