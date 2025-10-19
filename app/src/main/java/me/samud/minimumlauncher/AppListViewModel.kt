@@ -1,7 +1,10 @@
 package me.samud.minimumlauncher
 
 import android.app.Application
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -25,7 +28,24 @@ class AppListViewModel(application: Application) : AndroidViewModel(application)
     private val appLoader = AppLoader(appSource)
     private val favoritesManager = FavoritesManager(context)
 
+    // BroadcastReceiver to listen for package changes
+    private val packageChangeReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            // Refresh the list when a package is added, removed, or changed
+            refreshApps()
+        }
+    }
+
     init {
+        // Register the receiver to listen for package install/uninstall events
+        val filter = IntentFilter().apply {
+            addAction(Intent.ACTION_PACKAGE_ADDED)
+            addAction(Intent.ACTION_PACKAGE_REMOVED)
+            addAction(Intent.ACTION_PACKAGE_CHANGED)
+            addDataScheme("package")
+        }
+        getApplication<Application>().registerReceiver(packageChangeReceiver, filter)
+
         refreshApps()
     }
 
@@ -129,5 +149,14 @@ class AppListViewModel(application: Application) : AndroidViewModel(application)
 
             _searchResults.postValue(finalList)
         }
+    }
+
+    /**
+     * Called when the ViewModel is no longer used and will be destroyed.
+     * This is the perfect place to unregister the BroadcastReceiver.
+     */
+    override fun onCleared() {
+        super.onCleared()
+        getApplication<Application>().unregisterReceiver(packageChangeReceiver)
     }
 }
