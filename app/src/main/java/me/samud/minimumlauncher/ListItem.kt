@@ -2,6 +2,7 @@ package me.samud.minimumlauncher
 
 import android.content.Context
 import android.content.Intent
+import android.content.pm.LauncherApps
 import android.net.Uri
 import android.provider.Settings
 import androidx.fragment.app.Fragment
@@ -37,13 +38,14 @@ sealed class ListItem {
         }
     }
 
-    data class WebShortcutItem(val title: String, val url: String) : ListItem(), Launchable, LongClickable {
+    data class ShortcutItem(val shortcutInfo: android.content.pm.ShortcutInfo) : ListItem(), Launchable, LongClickable {
         override fun onLaunch(context: Context, fragmentManager: FragmentManager?) {
-            // TODO: Not yet implemented
+            val launcherApps = context.getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps
+            launcherApps.startShortcut(shortcutInfo, null, null)
         }
 
         override fun onLongClick(context: Context, fragmentManager: FragmentManager?, sharedViewModel: SharedViewModel): Boolean {
-            // TODO: Not yet implemented
+            ShortcutBottomSheetDialog(context, shortcutInfo, sharedViewModel).show()
             return true
         }
     }

@@ -50,7 +50,7 @@ class AppListAdapter(
         return when (items[position]) {
             is ListItem.UserAppItem -> VIEW_TYPE_LAUNCHABLE
             is ListItem.InternalActivityItem -> VIEW_TYPE_LAUNCHABLE
-            is ListItem.WebShortcutItem -> VIEW_TYPE_LAUNCHABLE
+            is ListItem.ShortcutItem -> VIEW_TYPE_LAUNCHABLE
             is ListItem.HeaderItem -> VIEW_TYPE_HEADER
             is ListItem.WidgetItem -> VIEW_TYPE_WIDGET
             is ListItem.EmptyStateItem -> VIEW_TYPE_EMPTY_STATE
@@ -103,9 +103,9 @@ class AppListAdapter(
                     listener.onItemClick(item)
                 }
             }
-            is ListItem.WebShortcutItem -> {
+            is ListItem.ShortcutItem -> {
                 val appHolder = holder as LaunchableViewHolder
-                appHolder.appName.text = item.title
+                appHolder.appName.text = "${item.shortcutInfo.shortLabel} ↗"
                 appHolder.itemView.setOnClickListener {
                     listener.onItemClick(item)
                 }

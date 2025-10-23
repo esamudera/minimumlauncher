@@ -27,6 +27,7 @@ class AppListViewModel(application: Application) : AndroidViewModel(application)
     private val appSource: AppSource = PackageManagerAppSource(context.packageManager)
     private val appLoader = AppLoader(appSource)
     private val favoritesManager = FavoritesManager(context)
+    private val shortcutManager = ShortcutManager(context) // Add ShortcutManager
 
     // BroadcastReceiver to listen for package changes
     private val packageChangeReceiver = object : BroadcastReceiver() {
@@ -82,18 +83,34 @@ class AppListViewModel(application: Application) : AndroidViewModel(application)
             displayList.addAll(favoritesList.map { ListItem.UserAppItem(it) })
         }
 
-        // Installed Apps section
-        val otherAppsList = allApps.filter { !it.isFavorite }
-        otherAppsList
-            .filter { it.name.isNotEmpty() }
-            .groupBy {
-                val firstChar = it.name.first()
-                if (firstChar.isDigit()) '#' else firstChar.uppercaseChar()
+        // User Launchable Items (Apps + Shortcuts) section
+        val nonFavoriteApps = allApps.filter { !it.isFavorite }
+        val shortcuts = shortcutManager.getShortcuts()
+
+        // Create a combined list of ListItem objects
+        val userLaunchableList = mutableListOf<ListItem>()
+
+        // Add non-favorite apps
+        userLaunchableList.addAll(nonFavoriteApps.filter { it.name.isNotEmpty() }.map { ListItem.UserAppItem(it) })
+
+        // Add shortcuts
+        userLaunchableList.addAll(shortcuts.map { ListItem.ShortcutItem(it) })
+
+        // Group the combined list alphabetically
+        userLaunchableList
+            .groupBy { item ->
+                val name = when (item) {
+                    is ListItem.UserAppItem -> item.appInfo.name
+                    is ListItem.ShortcutItem -> item.shortcutInfo.shortLabel?.toString() ?: ""
+                    else -> "" // Should not be reached
+                }
+                val firstChar = name.firstOrNull()
+                if (firstChar == null || firstChar.isDigit()) '#' else firstChar.uppercaseChar()
             }
             .toSortedMap()
-            .forEach { (headerChar, apps) ->
+            .forEach { (headerChar, items) ->
                 displayList.add(ListItem.HeaderItem(headerChar.toString()))
-                displayList.addAll(apps.map { ListItem.UserAppItem(it) })
+                displayList.addAll(items)
             }
 
         // MinimalLauncher Apps section
@@ -122,13 +139,13 @@ class AppListViewModel(application: Application) : AndroidViewModel(application)
                     when (item) {
                         is ListItem.UserAppItem -> item.appInfo.name.lowercase(Locale.getDefault()).contains(lowerCaseQuery)
                         is ListItem.InternalActivityItem -> item.title.lowercase(Locale.getDefault()).contains(lowerCaseQuery)
-                        is ListItem.WebShortcutItem -> item.title.lowercase(Locale.getDefault()).contains(lowerCaseQuery)
+                        is ListItem.ShortcutItem -> item.shortcutInfo.shortLabel?.toString()?.lowercase(Locale.getDefault())?.contains(lowerCaseQuery) == true
                         else -> false
                     }
                 }
 
                 // Group items by category
-                val apps = allMatchingItems.filterIsInstance<ListItem.UserAppItem>() + allMatchingItems.filterIsInstance<ListItem.WebShortcutItem>()
+                val apps = allMatchingItems.filterIsInstance<ListItem.UserAppItem>() + allMatchingItems.filterIsInstance<ListItem.ShortcutItem>()
                 val internalItems = allMatchingItems.filterIsInstance<ListItem.InternalActivityItem>()
 
                 // Add headers and their corresponding items
