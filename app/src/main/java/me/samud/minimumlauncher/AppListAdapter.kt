@@ -33,14 +33,6 @@ class AppListAdapter(
         val headerTitle: TextView = itemView.findViewById(R.id.header_title)
     }
 
-    // View holder for widget area
-    class WidgetViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        fun bind(height: Int) {
-            itemView.layoutParams.height = height
-            itemView.requestLayout()
-        }
-    }
-
     // View holder for empty state
     class EmptyStateViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val message: TextView = itemView.findViewById(R.id.empty_state_message)
@@ -52,8 +44,8 @@ class AppListAdapter(
             is ListItem.InternalActivityItem -> VIEW_TYPE_LAUNCHABLE
             is ListItem.ShortcutItem -> VIEW_TYPE_LAUNCHABLE
             is ListItem.HeaderItem -> VIEW_TYPE_HEADER
-            is ListItem.WidgetItem -> VIEW_TYPE_WIDGET
             is ListItem.EmptyStateItem -> VIEW_TYPE_EMPTY_STATE
+            else -> throw IllegalArgumentException("Invalid view type")
         }
     }
 
@@ -68,11 +60,6 @@ class AppListAdapter(
                 val view = LayoutInflater.from(parent.context)
                     .inflate(R.layout.list_header, parent, false)
                 HeaderViewHolder(view)
-            }
-            VIEW_TYPE_WIDGET -> {
-                val view = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.widget_area_item, parent, false)
-                WidgetViewHolder(view)
             }
             VIEW_TYPE_EMPTY_STATE -> {
                 val view = LayoutInflater.from(parent.context)
@@ -106,7 +93,7 @@ class AppListAdapter(
             is ListItem.ShortcutItem -> {
                 val appHolder = holder as LaunchableViewHolder
                 val context = appHolder.itemView.context
-                appHolder.appName.text = context.getString(R.string.shortcut_label, item.shortcutInfo.shortLabel)
+                appHolder.appName.text = item.shortcutInfo.shortLabel
                 appHolder.itemView.setOnClickListener {
                     listener.onItemClick(item)
                 }
@@ -118,10 +105,6 @@ class AppListAdapter(
             is ListItem.HeaderItem -> {
                 val headerHolder = holder as HeaderViewHolder
                 headerHolder.headerTitle.text = item.title
-            }
-            is ListItem.WidgetItem -> {
-                val widgetHolder = holder as WidgetViewHolder
-                widgetHolder.bind(item.height)
             }
             is ListItem.EmptyStateItem -> {
                 val emptyStateHolder = holder as EmptyStateViewHolder
@@ -142,7 +125,6 @@ class AppListAdapter(
     companion object {
         private const val VIEW_TYPE_LAUNCHABLE = 0
         private const val VIEW_TYPE_HEADER = 1
-        private const val VIEW_TYPE_WIDGET = 2
-        private const val VIEW_TYPE_EMPTY_STATE = 3
+        private const val VIEW_TYPE_EMPTY_STATE = 2
     }
 }

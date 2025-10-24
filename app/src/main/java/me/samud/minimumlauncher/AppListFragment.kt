@@ -3,6 +3,7 @@ package me.samud.minimumlauncher
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.DisplayMetrics
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -38,6 +39,15 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListA
         // Main RecyclerView
         recyclerView = view.findViewById(R.id.app_list_recycler_view)
         recyclerView.layoutManager = LinearLayoutManager(context)
+
+        // Apply 40% screen height as top padding
+        val displayMetrics = DisplayMetrics()
+        requireActivity().windowManager.defaultDisplay.getMetrics(displayMetrics)
+        val screenHeight = displayMetrics.heightPixels
+        val topPadding = (screenHeight * 0.40).toInt()
+        val bottomPadding = (screenHeight * 0.1).toInt()
+        recyclerView.setPadding(0, topPadding, 0, bottomPadding)
+
 
         // Search UI
         searchView = view.findViewById(R.id.search_view)
