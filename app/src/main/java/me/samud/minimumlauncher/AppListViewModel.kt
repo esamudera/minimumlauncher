@@ -74,7 +74,6 @@ class AppListViewModel(application: Application) : AndroidViewModel(application)
         // Partition shortcuts into favorite and non-favorite
         val allShortcuts = shortcutManager.getShortcuts()
         val favoriteShortcuts = allShortcuts.filter { favoritesManager.isFavoriteShortcut(it) }
-        val nonFavoriteShortcuts = allShortcuts.filterNot { favoritesManager.isFavoriteShortcut(it) }
 
         // User's Favorites section
         val favoriteApps = allApps.filter { it.isFavorite }
@@ -85,16 +84,14 @@ class AppListViewModel(application: Application) : AndroidViewModel(application)
         }
 
         // User Launchable Items (Apps + Shortcuts) section
-        val nonFavoriteApps = allApps.filter { !it.isFavorite }
-
-        // Create a combined list of ListItem objects
+        // We now include ALL apps and ALL shortcuts, not just non-favorites.
         val userLaunchableList = mutableListOf<ListItem>()
 
-        // Add non-favorite apps
-        userLaunchableList.addAll(nonFavoriteApps.filter { it.name.isNotEmpty() }.map { ListItem.UserAppItem(it) })
+        // Add all apps
+        userLaunchableList.addAll(allApps.filter { it.name.isNotEmpty() }.map { ListItem.UserAppItem(it) })
 
-        // Add non-favorite shortcuts
-        userLaunchableList.addAll(nonFavoriteShortcuts.map { ListItem.ShortcutItem(it) })
+        // Add all shortcuts
+        userLaunchableList.addAll(allShortcuts.map { ListItem.ShortcutItem(it) })
 
         // Group the combined list alphabetically
         userLaunchableList
