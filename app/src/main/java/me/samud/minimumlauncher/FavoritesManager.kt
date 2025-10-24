@@ -2,6 +2,7 @@ package me.samud.minimumlauncher
 
 import android.content.Context
 import android.content.pm.ShortcutInfo
+import androidx.core.content.edit
 
 class FavoritesManager(context: Context) {
 
@@ -17,13 +18,13 @@ class FavoritesManager(context: Context) {
     fun addFavoriteApp(packageName: String) {
         val favorites = getFavoriteApps()
         favorites.add(packageName)
-        prefs.edit().putStringSet(favoriteAppsKey, favorites).apply()
+        prefs.edit { putStringSet(favoriteAppsKey, favorites) }
     }
 
     fun removeFavoriteApp(packageName: String) {
         val favorites = getFavoriteApps()
         favorites.remove(packageName)
-        prefs.edit().putStringSet(favoriteAppsKey, favorites).apply()
+        prefs.edit { putStringSet(favoriteAppsKey, favorites) }
     }
 
     fun isFavoriteApp(packageName: String): Boolean {
@@ -42,13 +43,13 @@ class FavoritesManager(context: Context) {
     fun addFavoriteShortcut(shortcutInfo: ShortcutInfo) {
         val favorites = getFavoriteShortcuts()
         favorites.add(getShortcutId(shortcutInfo))
-        prefs.edit().putStringSet(favoriteShortcutsKey, favorites).apply()
+        prefs.edit { putStringSet(favoriteShortcutsKey, favorites) }
     }
 
     fun removeFavoriteShortcut(shortcutInfo: ShortcutInfo) {
         val favorites = getFavoriteShortcuts()
         favorites.remove(getShortcutId(shortcutInfo))
-        prefs.edit().putStringSet(favoriteShortcutsKey, favorites).apply()
+        prefs.edit { putStringSet(favoriteShortcutsKey, favorites) }
     }
 
     fun isFavoriteShortcut(shortcutInfo: ShortcutInfo): Boolean {

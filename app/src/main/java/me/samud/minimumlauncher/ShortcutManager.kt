@@ -5,6 +5,7 @@ import android.content.pm.LauncherApps
 import android.content.pm.ShortcutInfo
 import android.os.Process
 import android.util.Log
+import androidx.core.content.edit
 
 class ShortcutManager(private val context: Context) {
     private val prefs = context.getSharedPreferences("shortcuts", Context.MODE_PRIVATE)
@@ -16,7 +17,7 @@ class ShortcutManager(private val context: Context) {
         val identifier = "${shortcutInfo.`package`}/${shortcutInfo.id}"
         val currentShortcuts = prefs.getStringSet(shortcutsKey, emptySet())?.toMutableSet() ?: mutableSetOf()
         if (currentShortcuts.add(identifier)) {
-            prefs.edit().putStringSet(shortcutsKey, currentShortcuts).apply()
+            prefs.edit { putStringSet(shortcutsKey, currentShortcuts) }
             Log.d("ShortcutManager", "Added shortcut: $identifier")
         }
     }
@@ -46,7 +47,7 @@ class ShortcutManager(private val context: Context) {
         val identifier = "$packageName/$shortcutId"
         val currentShortcuts = prefs.getStringSet(shortcutsKey, emptySet())?.toMutableSet() ?: mutableSetOf()
         if (currentShortcuts.remove(identifier)) {
-            prefs.edit().putStringSet(shortcutsKey, currentShortcuts).apply()
+            prefs.edit { putStringSet(shortcutsKey, currentShortcuts) }
             Log.d("ShortcutManager", "Removed shortcut: $identifier")
         }
     }
