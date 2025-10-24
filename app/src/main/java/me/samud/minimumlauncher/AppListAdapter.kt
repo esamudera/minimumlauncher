@@ -105,7 +105,8 @@ class AppListAdapter(
             }
             is ListItem.ShortcutItem -> {
                 val appHolder = holder as LaunchableViewHolder
-                appHolder.appName.text = "${item.shortcutInfo.shortLabel} ↗"
+                val context = appHolder.itemView.context
+                appHolder.appName.text = context.getString(R.string.shortcut_label, item.shortcutInfo.shortLabel)
                 appHolder.itemView.setOnClickListener {
                     listener.onItemClick(item)
                 }

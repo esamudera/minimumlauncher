@@ -55,7 +55,7 @@ class AppListViewModel(application: Application) : AndroidViewModel(application)
         viewModelScope.launch(Dispatchers.IO) {
             // Load all apps on a background thread
             val allApps = appLoader.loadAndSortApps().map { appInfo ->
-                appInfo.apply { isFavorite = favoritesManager.isFavorite(appInfo.packageName) }
+                appInfo.apply { isFavorite = favoritesManager.isFavoriteApp(appInfo.packageName) }
             }
 
             // Prepare the display list on the background thread
@@ -76,16 +76,21 @@ class AppListViewModel(application: Application) : AndroidViewModel(application)
         val screenHeight = displayMetrics.heightPixels
         displayList.add(ListItem.WidgetItem((screenHeight * 0.45).toInt()))
 
+        // Partition shortcuts into favorite and non-favorite
+        val allShortcuts = shortcutManager.getShortcuts()
+        val favoriteShortcuts = allShortcuts.filter { favoritesManager.isFavoriteShortcut(it) }
+        val nonFavoriteShortcuts = allShortcuts.filterNot { favoritesManager.isFavoriteShortcut(it) }
+
         // User's Favorites section
-        val favoritesList = allApps.filter { it.isFavorite }
-        if (favoritesList.isNotEmpty()) {
+        val favoriteApps = allApps.filter { it.isFavorite }
+        if (favoriteApps.isNotEmpty() || favoriteShortcuts.isNotEmpty()) {
             displayList.add(ListItem.HeaderItem(context.getString(R.string.header_favorites)))
-            displayList.addAll(favoritesList.map { ListItem.UserAppItem(it) })
+            displayList.addAll(favoriteApps.map { ListItem.UserAppItem(it) })
+            displayList.addAll(favoriteShortcuts.map { ListItem.ShortcutItem(it) })
         }
 
         // User Launchable Items (Apps + Shortcuts) section
         val nonFavoriteApps = allApps.filter { !it.isFavorite }
-        val shortcuts = shortcutManager.getShortcuts()
 
         // Create a combined list of ListItem objects
         val userLaunchableList = mutableListOf<ListItem>()
@@ -93,8 +98,8 @@ class AppListViewModel(application: Application) : AndroidViewModel(application)
         // Add non-favorite apps
         userLaunchableList.addAll(nonFavoriteApps.filter { it.name.isNotEmpty() }.map { ListItem.UserAppItem(it) })
 
-        // Add shortcuts
-        userLaunchableList.addAll(shortcuts.map { ListItem.ShortcutItem(it) })
+        // Add non-favorite shortcuts
+        userLaunchableList.addAll(nonFavoriteShortcuts.map { ListItem.ShortcutItem(it) })
 
         // Group the combined list alphabetically
         userLaunchableList

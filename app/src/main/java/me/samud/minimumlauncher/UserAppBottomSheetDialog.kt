@@ -40,15 +40,15 @@ class UserAppBottomSheetDialog(
         val favoritesManager = FavoritesManager(context)
         val menuItems = mutableListOf<BottomSheetMenuItem>()
 
-        if (favoritesManager.isFavorite(appInfo.packageName)) {
+        if (favoritesManager.isFavoriteApp(appInfo.packageName)) {
             menuItems.add(BottomSheetMenuItem("Remove from favorite", android.R.drawable.ic_menu_delete) {
-                favoritesManager.removeFavorite(appInfo.packageName)
+                favoritesManager.removeFavoriteApp(appInfo.packageName)
                 sharedViewModel.notifyFavoritesChanged()
                 bottomSheetDialog.dismiss()
             })
         } else {
             menuItems.add(BottomSheetMenuItem("Add to favorite", android.R.drawable.ic_menu_add) {
-                favoritesManager.addFavorite(appInfo.packageName)
+                favoritesManager.addFavoriteApp(appInfo.packageName)
                 sharedViewModel.notifyFavoritesChanged()
                 bottomSheetDialog.dismiss()
             })

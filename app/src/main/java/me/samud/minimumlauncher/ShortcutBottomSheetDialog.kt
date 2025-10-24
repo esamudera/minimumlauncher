@@ -1,27 +1,79 @@
 package me.samud.minimumlauncher
 
 import android.content.Context
+import android.content.pm.ShortcutInfo
 import android.view.LayoutInflater
+import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.TextView
 import com.google.android.material.bottomsheet.BottomSheetDialog
 
 class ShortcutBottomSheetDialog(
     private val context: Context,
-    private val shortcutInfo: android.content.pm.ShortcutInfo,
+    private val shortcutInfo: ShortcutInfo,
     private val sharedViewModel: SharedViewModel
-) : BottomSheetDialog(context) {
+) {
 
-    init {
-        val view = LayoutInflater.from(context).inflate(R.layout.bottom_sheet_shortcut, null)
-        setContentView(view)
+    private data class BottomSheetMenuItem(
+        val text: String,
+        val iconResId: Int,
+        val onClick: () -> Unit
+    )
 
-        val removeButton = view.findViewById<LinearLayout>(R.id.remove_shortcut_layout)
-        removeButton.setOnClickListener {
-            val shortcutManager = ShortcutManager(context)
-            shortcutManager.removeShortcut(shortcutInfo.`package`, shortcutInfo.id)
-            // Re-use the favorites changed trigger to refresh the main list
-            sharedViewModel.notifyFavoritesChanged()
-            dismiss()
+    fun show() {
+        val bottomSheetDialog = BottomSheetDialog(context)
+        val view = LayoutInflater.from(context).inflate(R.layout.bottom_sheet_menu, null)
+        val menuLayout = view.findViewById<LinearLayout>(R.id.menu_layout)
+
+        getMenuItems(bottomSheetDialog).forEach { (text, iconResId, onClick) ->
+            val menuItemView = createMenuItem(text, iconResId, onClick, menuLayout)
+            menuLayout.addView(menuItemView)
         }
+
+        bottomSheetDialog.setContentView(view)
+        bottomSheetDialog.show()
+    }
+
+    private fun getMenuItems(bottomSheetDialog: BottomSheetDialog): List<BottomSheetMenuItem> {
+        val favoritesManager = FavoritesManager(context)
+        val menuItems = mutableListOf<BottomSheetMenuItem>()
+
+        if (favoritesManager.isFavoriteShortcut(shortcutInfo)) {
+            menuItems.add(BottomSheetMenuItem("Remove from favorite", android.R.drawable.ic_menu_delete) {
+                favoritesManager.removeFavoriteShortcut(shortcutInfo)
+                sharedViewModel.notifyFavoritesChanged()
+                bottomSheetDialog.dismiss()
+            })
+        } else {
+            menuItems.add(BottomSheetMenuItem("Add to favorite", android.R.drawable.ic_menu_add) {
+                favoritesManager.addFavoriteShortcut(shortcutInfo)
+                sharedViewModel.notifyFavoritesChanged()
+                bottomSheetDialog.dismiss()
+            })
+        }
+
+        // TODO: Add other shortcut-related options here if needed.
+        // For example, "Pin shortcut" is already handled by the system, but other actions could be added.
+
+        return menuItems
+    }
+
+    private fun createMenuItem(
+        text: String,
+        iconResId: Int,
+        onClick: () -> Unit,
+        menuLayout: LinearLayout
+    ): LinearLayout {
+        val menuItem = LayoutInflater.from(context).inflate(R.layout.bottom_sheet_menu_item, null, false) as LinearLayout
+        val iconView = menuItem.findViewById<ImageView>(R.id.icon)
+        val textView = menuItem.findViewById<TextView>(R.id.text)
+
+        textView.text = text
+        iconView.setImageResource(iconResId)
+
+        menuItem.setOnClickListener {
+            onClick()
+        }
+        return menuItem
     }
 }
