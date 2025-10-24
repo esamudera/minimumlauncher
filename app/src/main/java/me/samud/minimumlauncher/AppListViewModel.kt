@@ -74,7 +74,7 @@ class AppListViewModel(application: Application) : AndroidViewModel(application)
         // Widget Area
         val displayMetrics = context.resources.displayMetrics
         val screenHeight = displayMetrics.heightPixels
-        displayList.add(ListItem.WidgetItem((screenHeight * 0.45).toInt()))
+        displayList.add(ListItem.WidgetItem((screenHeight * 0.40).toInt()))
 
         // Partition shortcuts into favorite and non-favorite
         val allShortcuts = shortcutManager.getShortcuts()

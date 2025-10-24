@@ -39,7 +39,7 @@ object GestureNavigationHelper {
             view.alpha = 0f
             val fadeIn = ObjectAnimator.ofFloat(view, "alpha", 0f, 1f)
             fadeIn.duration = 260
-            fadeIn.startDelay = 300
+            fadeIn.startDelay = 310
             
             // Set the interpolator to make the animation start slow and speed up
             fadeIn.interpolator = AccelerateInterpolator()
