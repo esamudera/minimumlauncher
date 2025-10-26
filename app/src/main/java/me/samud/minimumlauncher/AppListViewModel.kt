@@ -131,31 +131,36 @@ class AppListViewModel(application: Application) : AndroidViewModel(application)
             val lowerCaseQuery = query.lowercase(Locale.getDefault())
 
             if (lowerCaseQuery.isNotEmpty()) {
-                // Filter all launchable items
-                var allMatchingItems = allItems.filter { item ->
-                    when (item) {
+                // Create sets to hold unique matching items
+                val matchingApps = mutableSetOf<ListItem>()
+                val matchingInternalItems = mutableSetOf<ListItem>()
+
+                // Single pass to filter and categorize items
+                for (item in allItems) {
+                    val matches = when (item) {
                         is ListItem.UserAppItem -> item.appInfo.name.lowercase(Locale.getDefault()).contains(lowerCaseQuery)
                         is ListItem.InternalActivityItem -> item.title.lowercase(Locale.getDefault()).contains(lowerCaseQuery)
                         is ListItem.ShortcutItem -> item.shortcutInfo.shortLabel?.toString()?.lowercase(Locale.getDefault())?.contains(lowerCaseQuery) == true
                         else -> false
                     }
+
+                    if (matches) {
+                        when (item) {
+                            is ListItem.UserAppItem, is ListItem.ShortcutItem -> matchingApps.add(item)
+                            is ListItem.InternalActivityItem -> matchingInternalItems.add(item)
+                            else -> {}
+                        }
+                    }
                 }
 
-                // Remove duplicates based on the unique identifier
-                allMatchingItems = allMatchingItems.distinctBy { it.identifier }
-
-                // Group items by category
-                val apps = allMatchingItems.filterIsInstance<ListItem.UserAppItem>() + allMatchingItems.filterIsInstance<ListItem.ShortcutItem>()
-                val internalItems = allMatchingItems.filterIsInstance<ListItem.InternalActivityItem>()
-
-                // Add headers and their corresponding items
-                if (apps.isNotEmpty()) {
+                // Build the final list from the unique sets
+                if (matchingApps.isNotEmpty()) {
                     finalList.add(ListItem.HeaderItem(appsHeader))
-                    finalList.addAll(apps)
+                    finalList.addAll(matchingApps)
                 }
-                if (internalItems.isNotEmpty()) {
+                if (matchingInternalItems.isNotEmpty()) {
                     finalList.add(ListItem.HeaderItem(launcherAppsHeader))
-                    finalList.addAll(internalItems)
+                    finalList.addAll(matchingInternalItems)
                 }
             }
 
