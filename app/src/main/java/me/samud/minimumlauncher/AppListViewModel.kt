@@ -132,7 +132,7 @@ class AppListViewModel(application: Application) : AndroidViewModel(application)
 
             if (lowerCaseQuery.isNotEmpty()) {
                 // Filter all launchable items
-                val allMatchingItems = allItems.filterIsInstance<ListItem.Launchable>().filter { item ->
+                var allMatchingItems = allItems.filter { item ->
                     when (item) {
                         is ListItem.UserAppItem -> item.appInfo.name.lowercase(Locale.getDefault()).contains(lowerCaseQuery)
                         is ListItem.InternalActivityItem -> item.title.lowercase(Locale.getDefault()).contains(lowerCaseQuery)
@@ -140,6 +140,9 @@ class AppListViewModel(application: Application) : AndroidViewModel(application)
                         else -> false
                     }
                 }
+
+                // Remove duplicates based on the unique identifier
+                allMatchingItems = allMatchingItems.distinctBy { it.identifier }
 
                 // Group items by category
                 val apps = allMatchingItems.filterIsInstance<ListItem.UserAppItem>() + allMatchingItems.filterIsInstance<ListItem.ShortcutItem>()

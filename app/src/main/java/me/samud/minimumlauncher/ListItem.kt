@@ -10,6 +10,8 @@ import androidx.fragment.app.FragmentManager
 import kotlin.reflect.KClass
 
 sealed class ListItem {
+    abstract val identifier: String
+
     interface Launchable {
         fun onLaunch(context: Context, fragmentManager: FragmentManager?)
     }
@@ -19,6 +21,8 @@ sealed class ListItem {
     }
 
     data class UserAppItem(val appInfo: AppInfo) : ListItem(), Launchable, LongClickable {
+        override val identifier = appInfo.packageName
+
         override fun onLaunch(context: Context, fragmentManager: FragmentManager?) {
             val launchIntent = context.packageManager.getLaunchIntentForPackage(appInfo.packageName)
             launchIntent?.let {
@@ -33,12 +37,16 @@ sealed class ListItem {
     }
 
     data class InternalActivityItem(val title: String, val intent: Intent) : ListItem(), Launchable {
+        override val identifier = "internal:$title"
+
         override fun onLaunch(context: Context, fragmentManager: FragmentManager?) {
             context.startActivity(intent)
         }
     }
 
     data class ShortcutItem(val shortcutInfo: android.content.pm.ShortcutInfo) : ListItem(), Launchable, LongClickable {
+        override val identifier = "${shortcutInfo.`package`}/${shortcutInfo.id}"
+
         override fun onLaunch(context: Context, fragmentManager: FragmentManager?) {
             val launcherApps = context.getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps
             launcherApps.startShortcut(shortcutInfo, null, null)
@@ -50,7 +58,11 @@ sealed class ListItem {
         }
     }
 
-    data class HeaderItem(val title: String) : ListItem()
+    data class HeaderItem(val title: String) : ListItem() {
+        override val identifier = "header:$title"
+    }
 
-    data class EmptyStateItem(val messageResId: Int) : ListItem()
+    data class EmptyStateItem(val messageResId: Int) : ListItem() {
+        override val identifier = "empty_state:$messageResId"
+    }
 }
