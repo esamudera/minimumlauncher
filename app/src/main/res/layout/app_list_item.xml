@@ -8,4 +8,7 @@
     android:paddingStart="56dp"
     android:paddingEnd="16dp"
     android:textSize="24sp"
-    android:textColor="?attr/colorOnSurface" />
+    android:textColor="?attr/colorOnSurface"
+    android:background="?attr/selectableItemBackground"
+    android:clickable="true"
+    android:focusable="true" />
