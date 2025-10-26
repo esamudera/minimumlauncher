@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Default padding for the app list as a fraction of screen height -->
+    <string name="padding_top_percent">0.35</string>
+    <string name="padding_bottom_percent">0.15</string>
+</resources>
