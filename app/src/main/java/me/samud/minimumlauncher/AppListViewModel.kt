@@ -137,14 +137,8 @@ class AppListViewModel(application: Application) : AndroidViewModel(application)
 
                 // Single pass to filter and categorize items
                 for (item in allItems) {
-                    val matches = when (item) {
-                        is ListItem.UserAppItem -> item.appInfo.name.lowercase(Locale.getDefault()).contains(lowerCaseQuery)
-                        is ListItem.InternalActivityItem -> item.title.lowercase(Locale.getDefault()).contains(lowerCaseQuery)
-                        is ListItem.ShortcutItem -> item.shortcutInfo.shortLabel?.toString()?.lowercase(Locale.getDefault())?.contains(lowerCaseQuery) == true
-                        else -> false
-                    }
-
-                    if (matches) {
+                    // Use the new matches method from the ListItem itself
+                    if (item.matches(lowerCaseQuery)) {
                         when (item) {
                             is ListItem.UserAppItem, is ListItem.ShortcutItem -> matchingApps.add(item)
                             is ListItem.InternalActivityItem -> matchingInternalItems.add(item)

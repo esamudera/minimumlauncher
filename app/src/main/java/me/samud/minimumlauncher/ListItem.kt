@@ -12,6 +12,8 @@ import kotlin.reflect.KClass
 sealed class ListItem {
     abstract val identifier: String
 
+    open fun matches(query: String): Boolean = false
+
     interface Launchable {
         fun onLaunch(context: Context, fragmentManager: FragmentManager?)
     }
@@ -34,6 +36,10 @@ sealed class ListItem {
             UserAppBottomSheetDialog(context, appInfo, sharedViewModel).show()
             return true
         }
+
+        override fun matches(query: String): Boolean {
+            return this.appInfo.name.contains(query, ignoreCase = true)
+        }
     }
 
     data class InternalActivityItem(val title: String, val intent: Intent) : ListItem(), Launchable {
@@ -41,6 +47,10 @@ sealed class ListItem {
 
         override fun onLaunch(context: Context, fragmentManager: FragmentManager?) {
             context.startActivity(intent)
+        }
+
+        override fun matches(query: String): Boolean {
+            return this.title.contains(query, ignoreCase = true)
         }
     }
 
@@ -55,6 +65,10 @@ sealed class ListItem {
         override fun onLongClick(context: Context, fragmentManager: FragmentManager?, sharedViewModel: SharedViewModel): Boolean {
             ShortcutBottomSheetDialog(context, shortcutInfo, sharedViewModel).show()
             return true
+        }
+
+        override fun matches(query: String): Boolean {
+            return this.shortcutInfo.shortLabel?.toString()?.contains(query, ignoreCase = true) ?: false
         }
     }
 
