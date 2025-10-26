@@ -63,8 +63,6 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListA
         searchResultsAdapter = AppListAdapter(emptyList(), this, this, sharedViewModel)
         searchResultsRecyclerView.adapter = searchResultsAdapter
 
-        setupSearch(view)
-
         return view
     }
 
@@ -73,6 +71,17 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListA
 
         // Initialize the AppListViewModel without a factory
         appListViewModel = ViewModelProvider(this)[AppListViewModel::class.java]
+
+        // Add this block to handle the back press for the SearchView
+        val onBackPressedCallback = object : OnBackPressedCallback(false) {
+            override fun handleOnBackPressed() {
+                // When the back button is pressed and the callback is enabled,
+                // hide the search view. This will trigger its correct animation.
+                searchView.hide()
+            }
+        }
+        // Add the callback to the fragment's back press dispatcher
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, onBackPressedCallback)
 
         // Observe the app list from the ViewModel
         appListViewModel.items.observe(viewLifecycleOwner) { displayList ->
@@ -100,12 +109,17 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListA
                 sharedViewModel.onFavoritesChangedHandled()
             }
         }
+
+        // Now, update the setupSearch method to enable/disable the callback
+        setupSearch(view, onBackPressedCallback) // Pass the callback to setupSearch
     }
 
-    private fun setupSearch(view: View) {
+    private fun setupSearch(view: View, onBackPressedCallback: OnBackPressedCallback) {
         searchView.addTransitionListener { _, _, newState ->
             if (newState == SearchView.TransitionState.SHOWING) {
-                // Trigger search with an empty query when the view is shown
+                // Enable the custom back press handler when the search view is shown
+                onBackPressedCallback.isEnabled = true
+                
                 appListViewModel.performSearch(
                     query = "",
                     allItems = currentDisplayList,
@@ -114,6 +128,8 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListA
                     emptyStateResId = R.string.msg_empty_search_results
                 )
             } else if (newState == SearchView.TransitionState.HIDDEN) {
+                // Disable it when the search view is hidden
+                onBackPressedCallback.isEnabled = false
                 searchView.editText.text.clear()
             }
         }
