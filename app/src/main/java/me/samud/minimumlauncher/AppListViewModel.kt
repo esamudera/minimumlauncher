@@ -23,11 +23,11 @@ class AppListViewModel(application: Application) : AndroidViewModel(application)
     val searchResults: LiveData<List<ListItem>> = _searchResults
 
     // Dependencies are now created inside the ViewModel
-    private val context: Context = getApplication<Application>().applicationContext
-    private val appSource: AppSource = PackageManagerAppSource(context.packageManager)
+    private val application: Application = getApplication()
+    private val appSource: AppSource = PackageManagerAppSource(application.packageManager)
     private val appLoader = AppLoader(appSource)
-    private val favoritesManager = FavoritesManager(context)
-    private val shortcutManager = ShortcutManager(context) // Add ShortcutManager
+    private val favoritesManager = FavoritesManager(application)
+    private val shortcutManager = ShortcutManager(application) // Add ShortcutManager
 
     // BroadcastReceiver to listen for package changes
     private val packageChangeReceiver = object : BroadcastReceiver() {
@@ -78,7 +78,7 @@ class AppListViewModel(application: Application) : AndroidViewModel(application)
         // User's Favorites section
         val favoriteApps = allApps.filter { it.isFavorite }
         if (favoriteApps.isNotEmpty() || favoriteShortcuts.isNotEmpty()) {
-            displayList.add(ListItem.HeaderItem(context.getString(R.string.header_favorites)))
+            displayList.add(ListItem.HeaderItem(application.getString(R.string.header_favorites)))
             displayList.addAll(favoriteApps.map { ListItem.UserAppItem(it) })
             displayList.addAll(favoriteShortcuts.map { ListItem.ShortcutItem(it) })
         }
@@ -111,14 +111,14 @@ class AppListViewModel(application: Application) : AndroidViewModel(application)
             }
 
         // MinimalLauncher Apps section
-        displayList.add(ListItem.HeaderItem(context.getString(R.string.header_launcher_apps)))
+        displayList.add(ListItem.HeaderItem(application.getString(R.string.header_launcher_apps)))
         displayList.add(
             ListItem.InternalActivityItem(
-                title = context.getString(R.string.title_launcher_settings),
+                title = application.getString(R.string.title_launcher_settings),
                 // Note: This requires an Activity context, but ViewModel has Application context.
                 // For launching, the context from the fragment is better. We'll pass it in the fragment.
                 // However, for creating the Intent, Application context is fine.
-                intent = android.content.Intent(context, SettingsActivity::class.java)
+                intent = Intent(application, SettingsActivity::class.java)
             )
         )
 
