@@ -1,6 +1,7 @@
 package me.samud.minimumlauncher
 
 import android.content.Context
+import android.content.pm.ShortcutInfo
 import android.view.LayoutInflater
 import android.widget.ImageView
 import android.widget.LinearLayout
