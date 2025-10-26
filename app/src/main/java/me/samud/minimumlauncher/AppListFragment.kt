@@ -44,8 +44,8 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListA
         val displayMetrics = DisplayMetrics()
         requireActivity().windowManager.defaultDisplay.getMetrics(displayMetrics)
         val screenHeight = displayMetrics.heightPixels
-        val topPadding = (screenHeight * 0.40).toInt()
-        val bottomPadding = (screenHeight * 0.1).toInt()
+        val topPadding = (screenHeight * 0.35).toInt()
+        val bottomPadding = (screenHeight * 0.15).toInt()
         recyclerView.setPadding(0, topPadding, 0, bottomPadding)
 
 
