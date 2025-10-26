@@ -3,7 +3,6 @@ package me.samud.minimumlauncher
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.util.DisplayMetrics
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -41,9 +40,7 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListA
         recyclerView.layoutManager = LinearLayoutManager(context)
 
         // Apply 40% screen height as top padding
-        val displayMetrics = DisplayMetrics()
-        requireActivity().windowManager.defaultDisplay.getMetrics(displayMetrics)
-        val screenHeight = displayMetrics.heightPixels
+        val screenHeight = requireActivity().getScreenHeight()
         
         // Read padding percentages from resources
         val topPaddingPercent = getString(R.string.padding_top_percent).toFloat()
