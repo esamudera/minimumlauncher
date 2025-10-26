@@ -1,12 +1,12 @@
 package me.samud.minimumlauncher
 
-import android.animation.ObjectAnimator
+import android.animation.Animator
+import android.animation.AnimatorInflater
 import android.app.Activity
 import android.graphics.Insets
 import android.os.Build
 import android.view.View
 import android.view.WindowInsets
-import android.view.animation.AccelerateInterpolator
 
 object GestureNavigationHelper {
 
@@ -37,13 +37,10 @@ object GestureNavigationHelper {
     fun applyGestureNavigationTransition(view: View, activity: Activity) {
         if (getNavigationMode(activity) != 0) { // Apply for gesture nav (1) and older OS (-1)
             view.alpha = 0f
-            val fadeIn = ObjectAnimator.ofFloat(view, "alpha", 0f, 1f)
-            fadeIn.duration = 260
-            fadeIn.startDelay = 310
-            
-            // Set the interpolator to make the animation start slow and speed up
-            fadeIn.interpolator = AccelerateInterpolator()
-            
+
+            // Load the animation from the XML resource
+            val fadeIn: Animator = AnimatorInflater.loadAnimator(activity, R.animator.gesture_fade_in)
+            fadeIn.setTarget(view)
             fadeIn.start()
         }
     }

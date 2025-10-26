@@ -3,4 +3,7 @@
     <!-- Default padding for the app list as a fraction of screen height -->
     <string name="padding_top_percent">0.35</string>
     <string name="padding_bottom_percent">0.15</string>
+
+    <!-- Gesture navigation animation config -->
+    <integer name="gesture_fade_in_duration">568</integer>
 </resources>
