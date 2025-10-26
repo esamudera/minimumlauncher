@@ -1,7 +1,6 @@
 package me.samud.minimumlauncher
 
 import android.content.Context
-import android.content.pm.ShortcutInfo
 import android.view.LayoutInflater
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -39,13 +38,13 @@ class ShortcutBottomSheetDialog(
         val menuItems = mutableListOf<BottomSheetMenuItem>()
 
         if (favoritesManager.isFavoriteShortcut(shortcutInfo)) {
-            menuItems.add(BottomSheetMenuItem("Remove from favorite", android.R.drawable.ic_menu_delete) {
+            menuItems.add(BottomSheetMenuItem(context.getString(R.string.action_remove_from_favorite), android.R.drawable.ic_menu_delete) {
                 favoritesManager.removeFavoriteShortcut(shortcutInfo)
                 sharedViewModel.notifyFavoritesChanged()
                 bottomSheetDialog.dismiss()
             })
         } else {
-            menuItems.add(BottomSheetMenuItem("Add to favorite", android.R.drawable.ic_menu_add) {
+            menuItems.add(BottomSheetMenuItem(context.getString(R.string.action_add_to_favorite), android.R.drawable.ic_menu_add) {
                 favoritesManager.addFavoriteShortcut(shortcutInfo)
                 sharedViewModel.notifyFavoritesChanged()
                 bottomSheetDialog.dismiss()
