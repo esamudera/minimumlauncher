@@ -1,9 +1,11 @@
 package me.samud.minimumlauncher
 
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
+import android.util.Log
+import android.view.GestureDetector
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
@@ -15,7 +17,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.search.SearchView
 
-class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListAdapter.OnItemLongClickListener {
+class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListAdapter.OnItemLongClickListener, GestureDetector.OnGestureListener {
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var appListAdapter: AppListAdapter
@@ -25,6 +27,11 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListA
     private var currentDisplayList: List<ListItem> = emptyList()
     private lateinit var sharedViewModel: SharedViewModel
     private lateinit var appListViewModel: AppListViewModel
+    private lateinit var gestureDetector: GestureDetector
+
+    // A simple threshold for swipe velocity and distance
+    private val swipeThreshold = 100
+    private val swipeVelocityThreshold = 100
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -50,7 +57,6 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListA
         val bottomPadding = (screenHeight * bottomPaddingPercent).toInt()
         recyclerView.setPadding(0, topPadding, 0, bottomPadding)
 
-
         // Search UI
         searchView = view.findViewById(R.id.search_view)
 
@@ -68,6 +74,14 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListA
 
         // Initialize the AppListViewModel without a factory
         appListViewModel = ViewModelProvider(this)[AppListViewModel::class.java]
+        
+        // Initialize the gesture detector
+        gestureDetector = GestureDetector(requireContext(), this)
+
+        // Set up touch listener on the root view to detect gestures
+        view.findViewById<View>(R.id.coordinator_layout).setOnTouchListener { _, event ->
+            gestureDetector.onTouchEvent(event)
+        }
 
         // Add this block to handle the back press for the SearchView
         val onBackPressedCallback = object : OnBackPressedCallback(false) {
@@ -188,4 +202,41 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListA
         }
         recyclerView.scrollToPosition(0)
     }
+
+    // --- GestureDetector.OnGestureListener implementations ---
+
+    override fun onFling(
+        e1: MotionEvent?,
+        e2: MotionEvent,
+        velocityX: Float,
+        velocityY: Float
+    ): Boolean {
+        if (e1 == null) return false
+
+        val diffY = e2.y - e1.y
+        val diffX = e2.x - e1.x
+
+        // Check for vertical swipe
+        if (Math.abs(diffX) < Math.abs(diffY)) {
+            // Check for downward direction, distance, and velocity
+            if (diffY > swipeThreshold && Math.abs(velocityY) > swipeVelocityThreshold) {
+                // SWIPE DOWN DETECTED!
+                Log.d("AppListFragment", "Swipe down gesture detected.")
+                // Trigger the notification expansion action.
+                NotificationExpansionService.triggerNotificationExpansion()
+                return true
+            }
+        }
+        return false
+    }
+
+    // Other required methods for OnGestureListener, can be empty
+    override fun onDown(e: MotionEvent): Boolean {
+        return true // Must return true for onFling to be called
+    }
+
+    override fun onShowPress(e: MotionEvent) {}
+    override fun onSingleTapUp(e: MotionEvent): Boolean = false
+    override fun onScroll(e1: MotionEvent?, e2: MotionEvent, distanceX: Float, distanceY: Float): Boolean = false
+    override fun onLongPress(e: MotionEvent) {}
 }

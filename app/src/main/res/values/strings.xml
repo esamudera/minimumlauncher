@@ -7,4 +7,5 @@
     <string name="msg_empty_search_results">Search results will appear here</string>
     <string name="action_remove_from_favorite">Remove from favorite</string>
     <string name="action_add_to_favorite">Add to favorite</string>
+    <string name="accessibility_service_description">Allows the launcher to expand the notification shade.</string>
 </resources>
