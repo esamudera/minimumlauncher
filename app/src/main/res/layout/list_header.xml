@@ -5,9 +5,9 @@
     android:layout_height="wrap_content"
     android:paddingStart="22dp"
     android:paddingEnd="24dp"
-    android:paddingTop="24dp"
+    android:paddingTop="22dp"
+    android:minHeight="44dp"
     android:gravity="center_vertical"
-    android:textSize="16sp"
-    android:textStyle="bold"
+    android:textSize="12sp"
     android:textColor="?android:attr/textColorPrimary"
     android:alpha="0.6" />
