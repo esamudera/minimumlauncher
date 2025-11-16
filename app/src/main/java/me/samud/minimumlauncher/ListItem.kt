@@ -19,7 +19,7 @@ sealed class ListItem {
     }
 
     interface LongClickable {
-        fun onLongClick(context: Context, fragmentManager: FragmentManager?, sharedViewModel: SharedViewModel): Boolean
+        fun onLongClick(context: Context, fragmentManager: FragmentManager?): Boolean
     }
 
     data class UserAppItem(val appInfo: AppInfo) : ListItem(), Launchable, LongClickable {
@@ -32,8 +32,8 @@ sealed class ListItem {
             }
         }
 
-        override fun onLongClick(context: Context, fragmentManager: FragmentManager?, sharedViewModel: SharedViewModel): Boolean {
-            UserAppBottomSheetDialog(context, appInfo, sharedViewModel).show()
+        override fun onLongClick(context: Context, fragmentManager: FragmentManager?): Boolean {
+            UserAppBottomSheetDialog(context, appInfo).show()
             return true
         }
 
@@ -62,8 +62,8 @@ sealed class ListItem {
             launcherApps.startShortcut(shortcutInfo, null, null)
         }
 
-        override fun onLongClick(context: Context, fragmentManager: FragmentManager?, sharedViewModel: SharedViewModel): Boolean {
-            ShortcutBottomSheetDialog(context, shortcutInfo, sharedViewModel).show()
+        override fun onLongClick(context: Context, fragmentManager: FragmentManager?): Boolean {
+            ShortcutBottomSheetDialog(context, shortcutInfo).show()
             return true
         }
 

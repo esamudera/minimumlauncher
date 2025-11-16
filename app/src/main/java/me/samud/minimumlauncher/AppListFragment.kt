@@ -25,7 +25,6 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListA
     private lateinit var searchResultsAdapter: AppListAdapter
     private lateinit var searchView: SearchView
     private var currentDisplayList: List<ListItem> = emptyList()
-    private lateinit var sharedViewModel: SharedViewModel
     private lateinit var appListViewModel: AppListViewModel
     private lateinit var gestureDetector: GestureDetector
 
@@ -37,9 +36,6 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListA
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Get the shared ViewModel, scoped to the activity
-        sharedViewModel = ViewModelProvider(requireActivity()).get(SharedViewModel::class.java)
-
         val view = inflater.inflate(R.layout.fragment_app_list, container, false)
 
         // Main RecyclerView
@@ -63,7 +59,7 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListA
         // Search Results RecyclerView
         searchResultsRecyclerView = view.findViewById(R.id.search_results_recycler_view)
         searchResultsRecyclerView.layoutManager = LinearLayoutManager(context)
-        searchResultsAdapter = AppListAdapter(emptyList(), this, this, sharedViewModel)
+        searchResultsAdapter = AppListAdapter(emptyList(), this, this)
         searchResultsRecyclerView.adapter = searchResultsAdapter
 
         return view
@@ -103,7 +99,7 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListA
             if (::appListAdapter.isInitialized) {
                 appListAdapter.updateItems(displayList)
             } else {
-                appListAdapter = AppListAdapter(displayList, this, this, sharedViewModel)
+                appListAdapter = AppListAdapter(displayList, this, this)
                 recyclerView.adapter = appListAdapter
             }
         }
@@ -111,14 +107,6 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListA
         // Observe search results from the ViewModel
         appListViewModel.searchResults.observe(viewLifecycleOwner) { searchList ->
             searchResultsAdapter.updateItems(searchList)
-        }
-
-        // Observe favorites changes and trigger a refresh in the AppListViewModel
-        sharedViewModel.favoritesChanged.observe(viewLifecycleOwner) { changed ->
-            if (changed) {
-                appListViewModel.refreshApps()
-                sharedViewModel.onFavoritesChangedHandled()
-            }
         }
 
         // Now, update the setupSearch method to enable/disable the callback
@@ -180,9 +168,9 @@ class AppListFragment : Fragment(), AppListAdapter.OnItemClickListener, AppListA
         }
     }
 
-    override fun onItemLongClick(item: ListItem, sharedViewModel: SharedViewModel) {
+    override fun onItemLongClick(item: ListItem) {
         if (item is ListItem.LongClickable) {
-            item.onLongClick(requireContext(), activity?.supportFragmentManager, sharedViewModel)
+            item.onLongClick(requireContext(), activity?.supportFragmentManager)
         }
     }
 

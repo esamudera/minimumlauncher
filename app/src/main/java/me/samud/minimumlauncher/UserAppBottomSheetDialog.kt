@@ -12,8 +12,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 
 class UserAppBottomSheetDialog(
     private val context: Context,
-    private val appInfo: AppInfo,
-    private val sharedViewModel: SharedViewModel
+    private val appInfo: AppInfo
 ) {
 
     private data class BottomSheetMenuItem(
@@ -43,13 +42,11 @@ class UserAppBottomSheetDialog(
         if (favoritesManager.isFavoriteApp(appInfo.packageName)) {
             menuItems.add(BottomSheetMenuItem("Remove from favorite", android.R.drawable.ic_menu_delete) {
                 favoritesManager.removeFavoriteApp(appInfo.packageName)
-                sharedViewModel.notifyFavoritesChanged()
                 bottomSheetDialog.dismiss()
             })
         } else {
             menuItems.add(BottomSheetMenuItem("Add to favorite", android.R.drawable.ic_menu_add) {
                 favoritesManager.addFavoriteApp(appInfo.packageName)
-                sharedViewModel.notifyFavoritesChanged()
                 bottomSheetDialog.dismiss()
             })
         }

@@ -10,8 +10,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 
 class ShortcutBottomSheetDialog(
     private val context: Context,
-    private val shortcutInfo: ShortcutInfo,
-    private val sharedViewModel: SharedViewModel
+    private val shortcutInfo: ShortcutInfo
 ) {
 
     private data class BottomSheetMenuItem(
@@ -41,13 +40,11 @@ class ShortcutBottomSheetDialog(
         if (favoritesManager.isFavoriteShortcut(shortcutInfo)) {
             menuItems.add(BottomSheetMenuItem(context.getString(R.string.action_remove_from_favorite), android.R.drawable.ic_menu_delete) {
                 favoritesManager.removeFavoriteShortcut(shortcutInfo)
-                sharedViewModel.notifyFavoritesChanged()
                 bottomSheetDialog.dismiss()
             })
         } else {
             menuItems.add(BottomSheetMenuItem(context.getString(R.string.action_add_to_favorite), android.R.drawable.ic_menu_add) {
                 favoritesManager.addFavoriteShortcut(shortcutInfo)
-                sharedViewModel.notifyFavoritesChanged()
                 bottomSheetDialog.dismiss()
             })
         }

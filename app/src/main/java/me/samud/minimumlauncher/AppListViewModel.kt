@@ -47,7 +47,11 @@ class AppListViewModel(application: Application) : AndroidViewModel(application)
         }
         getApplication<Application>().registerReceiver(packageChangeReceiver, filter)
 
-        refreshApps()
+        viewModelScope.launch {
+            favoritesManager.favoritesChanged.collect {
+                refreshApps()
+            }
+        }
     }
 
     fun refreshApps() {
